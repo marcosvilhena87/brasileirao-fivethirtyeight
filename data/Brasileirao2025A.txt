@@ -1,0 +1,383 @@
+GamesBegin
+TeamListedFirst: home
+29/03/2025	Cruzeiro	2-1	Mirassol
+29/03/2025	Gremio		2-1	Atletico-MG
+29/03/2025	Fortaleza	2-0	Fluminense
+29/03/2025	Sao Paulo	0-0	Sport
+29/03/2025	Juventude	2-0	Vitoria
+29/03/2025	Flamengo	1-1	Internacional
+30/03/2025	Palmeiras	0-0	Botafogo
+30/03/2025	Vasco		2-1	Santos
+30/03/2025	Bahia		1-1	Corinthians
+31/03/2025	Bragantino	2-2	Ceara
+05/04/2025	Ceara		2-0	Gremio
+05/04/2025	Corinthians	3-0	Vasco
+05/04/2025	Botafogo	2-0	Juventude
+06/04/2025	Fluminense	2-1	Bragantino
+06/04/2025	Atletico-MG	0-0	Sao Paulo
+06/04/2025	Internacional	3-0	Cruzeiro
+06/04/2025	Sport		1-2	Palmeiras
+06/04/2025	Mirassol	1-1	Fortaleza
+06/04/2025	Vitoria		1-2	Flamengo
+06/04/2025	Santos		2-2	Bahia
+12/04/2025	Juventude	2-1	Ceara
+12/04/2025	Bragantino	1-0	Botafogo
+12/04/2025	Palmeiras	2-0	Corinthians
+12/04/2025	Vasco		3-1	Sport
+13/04/2025	Bahia		1-1	Mirassol
+13/04/2025	Sao Paulo	1-1	Cruzeiro
+13/04/2025	Gremio		0-2	Flamengo
+13/04/2025	Fluminense	1-0	Santos
+13/04/2025	Fortaleza	0-0	Internacional
+13/04/2025	Atletico-MG	2-2	Vitoria
+15/04/2025	Ceara		2-1	Vasco
+16/04/2025	Botafogo	2-2	Sao Paulo
+16/04/2025	Sport		0-1	Bragantino
+16/04/2025	Mirassol	4-1	Gremio
+16/04/2025	Corinthians	0-2	Fluminense
+16/04/2025	Internacional	0-1	Palmeiras
+16/04/2025	Vitoria		2-1	Fortaleza
+16/04/2025	Flamengo	6-0	Juventude
+16/04/2025	Santos		2-0	Atletico-MG
+17/04/2025	Cruzeiro	3-0	Bahia
+19/04/2025	Corinthians	2-1	Sport
+19/04/2025	Vasco		0-0	Flamengo
+19/04/2025	Gremio		1-1	Internacional
+20/04/2025	Juventude	2-2	Mirassol
+20/04/2025	Sao Paulo	2-1	Santos
+20/04/2025	Atletico-MG	1-0	Botafogo
+20/04/2025	Fluminense	1-1	Vitoria
+20/04/2025	Fortaleza	1-2	Palmeiras
+20/04/2025	Bragantino	1-0	Cruzeiro
+21/04/2025	Bahia		1-0	Ceara
+26/04/2025	Internacional	3-1	Juventude
+26/04/2025	Ceara		1-1	Sao Paulo
+26/04/2025	Mirassol	2-2	Atletico-MG
+26/04/2025	Sport		0-0	Fortaleza
+26/04/2025	Botafogo	2-0	Fluminense
+27/04/2025	Flamengo	4-0	Corinthians
+27/04/2025	Vitoria		1-1	Gremio
+27/04/2025	Cruzeiro	1-0	Vasco
+27/04/2025	Palmeiras	0-1	Bahia
+27/04/2025	Santos		1-2	Bragantino
+02/05/2025	Sao Paulo	0-0	Fortaleza
+03/05/2025	Corinthians	4-2	Internacional
+03/05/2025	Ceara		1-0	Vitoria
+03/05/2025	Fluminense	2-1	Sport
+03/05/2025	Bahia		1-0	Botafogo
+04/05/2025	Gremio		1-0	Santos
+04/05/2025	Vasco		0-1	Palmeiras
+04/05/2025	Cruzeiro	2-1	Flamengo
+05/05/2025	Bragantino	1-0	Mirassol
+05/05/2025	Juventude	0-1	Atletico-MG
+10/05/2025	Fortaleza	5-0	Juventude
+10/05/2025	Mirassol	2-1	Corinthians
+10/05/2025	Gremio		1-1	Bragantino
+10/05/2025	Vitoria		2-1	Vasco
+10/05/2025	Flamengo	1-0	Bahia
+11/05/2025	Sport		0-4	Cruzeiro
+11/05/2025	Palmeiras	1-0	Sao Paulo
+11/05/2025	Atletico-MG	3-2	Fluminense
+11/05/2025	Botafogo	4-0	Internacional
+12/05/2025	Santos		0-0	Ceara
+17/05/2025	Ceara		2-0	Sport
+17/05/2025	Vasco		3-0	Fortaleza
+17/05/2025	Sao Paulo	2-1	Gremio
+18/05/2025	Juventude	1-1	Fluminense
+18/05/2025	Corinthians	1-0	Santos
+18/05/2025	Bahia		2-1	Vitoria
+18/05/2025	Bragantino	1-2	Palmeiras
+18/05/2025	Flamengo	0-0	Botafogo
+18/05/2025	Cruzeiro	0-0	Atletico-MG
+18/05/2025	Internacional	1-1	Mirassol
+24/05/2025	Sao Paulo	0-2	Mirassol
+24/05/2025	Fluminense	2-1	Vasco
+24/05/2025	Atletico-MG	0-0	Corinthians
+25/05/2025	Gremio		1-0	Bahia
+25/05/2025	Palmeiras	0-2	Flamengo
+25/05/2025	Sport		1-1	Internacional
+25/05/2025	Vitoria		0-1	Santos
+25/05/2025	Fortaleza	0-2	Cruzeiro
+26/05/2025	Bragantino	1-0	Juventude
+31/05/2025	Bahia		2-1	Sao Paulo
+31/05/2025	Vasco		0-2	Bragantino
+01/06/2025	Mirassol	1-0	Sport
+01/06/2025	Santos		0-1	Botafogo
+01/06/2025	Juventude	0-2	Gremio
+01/06/2025	Ceara		0-1	Atletico-MG
+01/06/2025	Flamengo	5-0	Fortaleza
+01/06/2025	Corinthians	0-0	Vitoria
+01/06/2025	Cruzeiro	2-1	Palmeiras
+01/06/2025	Internacional	0-2	Fluminense
+04/06/2025	Botafogo	3-2	Ceara
+12/06/2025	Bragantino	0-3	Bahia
+12/06/2025	Vitoria		0-0	Cruzeiro
+12/06/2025	Fortaleza	2-3	Santos
+12/06/2025	Gremio		1-1	Corinthians
+12/06/2025	Atletico-MG	2-0	Internacional
+12/06/2025	Sao Paulo	1-3	Vasco
+12/07/2025	Internacional	1-0	Vitoria
+12/07/2025	Flamengo	2-0	Sao Paulo
+12/07/2025	Vasco		0-2	Botafogo
+12/07/2025	Bahia		2-1	Atletico-MG
+13/07/2025	Corinthians	1-2	Bragantino
+13/07/2025	Cruzeiro	4-1	Gremio
+13/07/2025	Fortaleza	0-1	Ceara
+14/07/2025	Juventude	2-0	Sport
+16/07/2025	Palmeiras	1-1	Mirassol
+16/07/2025	Ceara		0-1	Corinthians
+16/07/2025	Santos		1-0	Flamengo
+16/07/2025	Botafogo	0-0	Vitoria
+16/07/2025	Bragantino	2-2	Sao Paulo
+17/07/2025	Fluminense	0-2	Cruzeiro
+19/07/2025	Fortaleza	1-1	Bahia
+19/07/2025	Vasco		1-1	Gremio
+19/07/2025	Mirassol	3-0	Santos
+19/07/2025	Sao Paulo	2-0	Corinthians
+20/07/2025	Internacional	1-0	Ceara
+20/07/2025	Cruzeiro	4-0	Juventude
+20/07/2025	Vitoria		1-0	Bragantino
+20/07/2025	Sport		0-1	Botafogo
+20/07/2025	Palmeiras	3-2	Atletico-MG
+20/07/2025	Flamengo	1-0	Fluminense
+21/07/2025	Fluminense		Ceara
+21/07/2025	Botafogo		Mirassol
+21/07/2025	Palmeiras		Juventude
+21/07/2025	Sport			Flamengo
+21/07/2025	Santos			Palmeiras
+21/07/2025	Mirassol		Fluminense
+21/07/2025	Atletico-MG		Sport
+21/07/2025	Bahia			Internacional
+21/07/2025	Juventude		Vasco
+23/07/2025	Gremio			Botafogo
+23/07/2025	Atletico-MG		Fortaleza
+23/07/2025	Vasco			Bahia
+23/07/2025	Ceara			Mirassol
+23/07/2025	Fluminense		Palmeiras
+23/07/2025	Corinthians		Cruzeiro
+23/07/2025	Vitoria			Sport
+23/07/2025	Bragantino		Flamengo
+23/07/2025	Santos			Internacional
+24/07/2025	Juventude		Sao Paulo
+26/07/2025	Fortaleza		Bragantino
+26/07/2025	Mirassol		Vitoria
+26/07/2025	Sport			Santos
+26/07/2025	Botafogo		Corinthians
+26/07/2025	Palmeiras		Gremio
+27/07/2025	Cruzeiro		Ceara
+27/07/2025	Sao Paulo		Fluminense
+27/07/2025	Bahia			Juventude
+27/07/2025	Internacional		Vasco
+27/07/2025	Flamengo		Atletico-MG
+29/07/2025	Gremio			Fortaleza
+02/08/2025	Sport			Bahia
+02/08/2025	Mirassol		Vasco
+02/08/2025	Fluminense		Gremio
+03/08/2025	Corinthians		Fortaleza
+03/08/2025	Botafogo		Cruzeiro
+03/08/2025	Atletico-MG		Bragantino
+03/08/2025	Ceara			Flamengo
+03/08/2025	Vitoria			Palmeiras
+03/08/2025	Internacional		Sao Paulo
+04/08/2025	Santos			Juventude
+10/08/2025	Gremio			Sport
+10/08/2025	Fortaleza		Botafogo
+10/08/2025	Cruzeiro		Santos
+10/08/2025	Sao Paulo		Vitoria
+10/08/2025	Juventude		Corinthians
+10/08/2025	Bahia			Fluminense
+10/08/2025	Flamengo		Mirassol
+10/08/2025	Palmeiras		Ceara
+10/08/2025	Vasco			Atletico-MG
+10/08/2025	Bragantino		Internacional
+17/08/2025	Internacional		Flamengo
+17/08/2025	Ceara			Bragantino
+17/08/2025	Sport			Sao Paulo
+17/08/2025	Atletico-MG		Gremio
+17/08/2025	Vitoria			Juventude
+17/08/2025	Fluminense		Fortaleza
+17/08/2025	Mirassol		Cruzeiro
+17/08/2025	Botafogo		Palmeiras
+17/08/2025	Santos			Vasco
+17/08/2025	Corinthians		Bahia
+24/08/2025	Gremio			Ceara
+24/08/2025	Bahia			Santos
+24/08/2025	Cruzeiro		Internacional
+24/08/2025	Bragantino		Fluminense
+24/08/2025	Fortaleza		Mirassol
+24/08/2025	Juventude		Botafogo
+24/08/2025	Flamengo		Vitoria
+24/08/2025	Vasco			Corinthians
+24/08/2025	Palmeiras		Sport
+24/08/2025	Sao Paulo		Atletico-MG
+31/08/2025	Botafogo		Bragantino
+31/08/2025	Vitoria			Atletico-MG
+31/08/2025	Ceara			Juventude
+31/08/2025	Sport			Vasco
+31/08/2025	Internacional		Fortaleza
+31/08/2025	Cruzeiro		Sao Paulo
+31/08/2025	Corinthians		Palmeiras
+31/08/2025	Santos			Fluminense
+31/08/2025	Mirassol		Bahia
+31/08/2025	Flamengo		Gremio
+14/09/2025	Vasco			Ceara
+14/09/2025	Bahia			Cruzeiro
+14/09/2025	Fortaleza		Vitoria
+14/09/2025	Juventude		Flamengo
+14/09/2025	Gremio			Mirassol
+14/09/2025	Atletico-MG		Santos
+14/09/2025	Palmeiras		Internacional
+14/09/2025	Sao Paulo		Botafogo
+14/09/2025	Bragantino		Sport
+14/09/2025	Fluminense		Corinthians
+21/09/2025	Cruzeiro		Bragantino
+21/09/2025	Palmeiras		Fortaleza
+21/09/2025	Botafogo		Atletico-MG
+21/09/2025	Flamengo		Vasco
+21/09/2025	Santos			Sao Paulo
+21/09/2025	Mirassol		Juventude
+21/09/2025	Ceara			Bahia
+21/09/2025	Vitoria			Fluminense
+21/09/2025	Internacional		Gremio
+21/09/2025	Sport			Corinthians
+28/09/2025	Atletico-MG		Mirassol
+28/09/2025	Gremio			Vitoria
+28/09/2025	Bahia			Palmeiras
+28/09/2025	Fortaleza		Sport
+28/09/2025	Bragantino		Santos
+28/09/2025	Sao Paulo		Ceara
+28/09/2025	Fluminense		Botafogo
+28/09/2025	Vasco			Cruzeiro
+28/09/2025	Corinthians		Flamengo
+28/09/2025	Juventude		Internacional
+01/10/2025	Flamengo		Cruzeiro
+01/10/2025	Internacional		Corinthians
+01/10/2025	Vitoria			Ceara
+01/10/2025	Fortaleza		Sao Paulo
+01/10/2025	Atletico-MG		Juventude
+01/10/2025	Mirassol		Bragantino
+01/10/2025	Botafogo		Bahia
+01/10/2025	Palmeiras		Vasco
+01/10/2025	Santos			Gremio
+01/10/2025	Sport			Fluminense
+16/10/2025	Cruzeiro		Sport
+16/10/2025	Internacional		Botafogo
+16/10/2025	Bahia			Flamengo
+16/10/2025	Ceara			Santos
+16/10/2025	Bragantino		Gremio
+16/10/2025	Juventude		Fortaleza
+16/10/2025	Fluminense		Atletico-MG
+16/10/2025	Sao Paulo		Palmeiras
+16/10/2025	Vasco			Vitoria
+16/10/2025	Corinthians		Mirassol
+26/10/2025	Gremio			Sao Paulo
+26/10/2025	Atletico-MG		Cruzeiro
+26/10/2025	Fortaleza		Vasco
+26/10/2025	Mirassol		Internacional
+26/10/2025	Vitoria			Bahia
+26/10/2025	Botafogo		Flamengo
+26/10/2025	Sport			Ceara
+26/10/2025	Fluminense		Juventude
+26/10/2025	Palmeiras		Bragantino
+26/10/2025	Santos			Corinthians
+05/11/2025	Flamengo		Palmeiras
+05/11/2025	Internacional		Sport
+05/11/2025	Bahia			Gremio
+05/11/2025	Ceara			Botafogo
+05/11/2025	Cruzeiro		Fortaleza
+05/11/2025	Juventude		Bragantino
+05/11/2025	Vasco			Fluminense
+05/11/2025	Mirassol		Sao Paulo
+05/11/2025	Corinthians		Atletico-MG
+05/11/2025	Santos			Vitoria
+19/11/2025	Gremio			Juventude
+19/11/2025	Atletico-MG		Ceara
+19/11/2025	Fortaleza		Flamengo
+19/11/2025	Bragantino		Vasco
+19/11/2025	Vitoria			Corinthians
+19/11/2025	Botafogo		Santos
+19/11/2025	Sport			Mirassol
+19/11/2025	Fluminense		Internacional
+19/11/2025	Palmeiras		Cruzeiro
+19/11/2025	Sao Paulo		Bahia
+23/11/2025	Cruzeiro		Vitoria
+23/11/2025	Bahia			Bragantino
+23/11/2025	Ceara			Fluminense
+23/11/2025	Juventude		Palmeiras
+23/11/2025	Mirassol		Botafogo
+23/11/2025	Internacional		Atletico-MG
+23/11/2025	Santos			Fortaleza
+23/11/2025	Vasco			Sao Paulo
+23/11/2025	Flamengo		Sport
+23/11/2025	Corinthians		Gremio
+30/11/2025	Atletico-MG		Bahia
+30/11/2025	Gremio			Cruzeiro
+30/11/2025	Ceara			Fortaleza
+30/11/2025	Bragantino		Corinthians
+30/11/2025	Vitoria			Internacional
+30/11/2025	Sport			Juventude
+30/11/2025	Sao Paulo		Flamengo
+30/11/2025	Fluminense		Mirassol
+30/11/2025	Botafogo		Vasco
+30/11/2025	Palmeiras		Santos
+03/12/2025	Cruzeiro		Fluminense
+03/12/2025	Vitoria			Botafogo
+03/12/2025	Sport			Atletico-MG
+03/12/2025	Mirassol		Palmeiras
+03/12/2025	Fortaleza		Gremio
+03/12/2025	Internacional		Bahia
+03/12/2025	Flamengo		Santos
+03/12/2025	Sao Paulo		Bragantino
+03/12/2025	Vasco			Juventude
+03/12/2025	Corinthians		Ceara
+07/12/2025	Gremio			Vasco
+07/12/2025	Atletico-MG		Palmeiras
+07/12/2025	Ceara			Internacional
+07/12/2025	Bragantino		Vitoria
+07/12/2025	Bahia			Fortaleza
+07/12/2025	Botafogo		Sport
+07/12/2025	Juventude		Cruzeiro
+07/12/2025	Fluminense		Flamengo
+07/12/2025	Corinthians		Sao Paulo
+07/12/2025	Santos			Mirassol
+10/12/2025	Flamengo		Bragantino
+10/12/2025	Bahia			Vasco
+10/12/2025	Fortaleza		Atletico-MG
+10/12/2025	Sport			Vitoria
+10/12/2025	Cruzeiro		Corinthians
+10/12/2025	Internacional		Santos
+10/12/2025	Mirassol		Ceara
+10/12/2025	Palmeiras		Fluminense
+10/12/2025	Botafogo		Gremio
+10/12/2025	Sao Paulo		Juventude
+14/12/2025	Atletico-MG		Flamengo
+14/12/2025	Gremio			Palmeiras
+14/12/2025	Ceara			Cruzeiro
+14/12/2025	Bragantino		Fortaleza
+14/12/2025	Vitoria			Mirassol
+14/12/2025	Juventude		Bahia
+14/12/2025	Santos			Sport
+14/12/2025	Fluminense		Sao Paulo
+14/12/2025	Vasco			Internacional
+14/12/2025	Corinthians		Botafogo
+17/12/2025	Bahia			Sport
+17/12/2025	Juventude		Santos
+17/12/2025	Cruzeiro		Botafogo
+17/12/2025	Gremio			Fluminense
+17/12/2025	Sao Paulo		Internacional
+17/12/2025	Fortaleza		Corinthians
+17/12/2025	Flamengo		Ceara
+17/12/2025	Bragantino		Atletico-MG
+17/12/2025	Vasco			Mirassol
+17/12/2025	Palmeiras		Vitoria
+21/12/2025	Internacional		Bragantino
+21/12/2025	Atletico-MG		Vasco
+21/12/2025	Ceara			Palmeiras
+21/12/2025	Mirassol		Flamengo
+21/12/2025	Vitoria			Sao Paulo
+21/12/2025	Botafogo		Fortaleza
+21/12/2025	Sport			Gremio
+21/12/2025	Fluminense		Bahia
+21/12/2025	Corinthians		Juventude
+21/12/2025	Santos			Cruzeiro
+GamesEnd
