@@ -8,6 +8,7 @@ from .simulator import (
     simulate_final_table,
     summary_table,
     estimate_dixon_coles_strengths,
+    estimate_spi_strengths,
     compute_leader_stats,
     estimate_leader_history_strengths,
 )
@@ -20,6 +21,7 @@ __all__ = [
     "simulate_final_table",
     "summary_table",
     "estimate_dixon_coles_strengths",
+    "estimate_spi_strengths",
     "compute_leader_stats",
     "estimate_leader_history_strengths",
 ]

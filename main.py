@@ -28,6 +28,7 @@ def main() -> None:
             "neg_binom",
             "skellam",
             "elo",
+            "spi",
             "leader_history",
         ],
         help="team strength estimation method (use 'historic_ratio' to include past season)",

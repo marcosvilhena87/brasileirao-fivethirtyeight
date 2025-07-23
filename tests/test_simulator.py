@@ -286,6 +286,26 @@ def test_simulate_chances_dixon_coles_seed_repeatability():
     assert abs(sum(chances1.values()) - 1.0) < 1e-6
 
 
+def test_simulate_chances_spi_seed_repeatability():
+    df = parse_matches("data/Brasileirao2025A.txt")
+    rng = np.random.default_rng(101)
+    chances1 = simulate_chances(
+        df,
+        iterations=5,
+        rating_method="spi",
+        rng=rng,
+    )
+    rng = np.random.default_rng(101)
+    chances2 = simulate_chances(
+        df,
+        iterations=5,
+        rating_method="spi",
+        rng=rng,
+    )
+    assert chances1 == chances2
+    assert abs(sum(chances1.values()) - 1.0) < 1e-6
+
+
 def test_compute_leader_stats():
     data = [
         {
