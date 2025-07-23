@@ -281,6 +281,41 @@ def _estimate_dispersion(matches: pd.DataFrame) -> float:
     return (alpha_home + alpha_away) / 2
 
 
+def load_market_values(path: str | Path = "data/Brasileirao2025A.csv") -> dict[str, float]:
+    """Return team market values from ``path``.
+
+    The CSV file is semicolon-delimited and may start with a UTF-8 BOM.
+    Values are expected in millions of Euros.
+    """
+    df = pd.read_csv(path, sep=";", encoding="utf-8-sig")
+    df.columns = [c.strip() for c in df.columns]
+    team_col = df.columns[0]
+    value_col = df.columns[1]
+    return df.set_index(team_col)[value_col].astype(float).to_dict()
+
+
+def estimate_market_strengths(
+    matches: pd.DataFrame,
+    market_path: str | Path = "data/Brasileirao2025A.csv",
+    smooth: float = 1.0,
+) -> tuple[dict[str, dict[str, float]], float, float]:
+    """Estimate strengths adjusted by team market values."""
+    strengths, avg_goals, home_adv = _estimate_strengths(matches, smooth=smooth)
+
+    market_values = load_market_values(market_path)
+    if market_values:
+        avg_value = float(np.mean(list(market_values.values()))) or 1.0
+        for team, s in strengths.items():
+            val = market_values.get(team)
+            if val is None:
+                continue
+            factor = val / avg_value
+            s["attack"] *= factor
+            s["defense"] /= factor
+
+    return strengths, avg_goals, home_adv
+
+
 def estimate_strengths_with_history(
     current_matches: pd.DataFrame | None = None,
     past_path: str | Path = "data/Brasileirao2024A.txt",
@@ -617,18 +652,25 @@ def estimate_dixon_coles_strengths(matches: pd.DataFrame):
     return strengths, avg_goals, home_adv, rho
 
 
-def estimate_spi_strengths(matches: pd.DataFrame):
+def estimate_spi_strengths(
+    matches: pd.DataFrame,
+    market_path: str | Path = "data/Brasileirao2025A.csv",
+    smooth: float = 1.0,
+) -> tuple[dict[str, dict[str, float]], float, float]:
     """Estimate strengths with a logistic regression on match outcomes.
 
     The function first computes basic attack and defence factors using
-    :func:`_estimate_strengths`. It then derives the expected goal difference
+    :func:`estimate_market_strengths`. It then derives the expected goal difference
     for each played match and fits a multinomial logistic regression of the
     win/draw/loss result on that value.  The regression coefficients are not
     currently used further but the model mirrors the approach FiveThirtyEight
-    employ in their Soccer Power Index calculations.
+    employ in their Soccer Power Index calculations. The ``market_path``
+    parameter can be used to supply a custom CSV file with team market values.
     """
 
-    strengths, avg_goals, home_adv = _estimate_strengths(matches)
+    strengths, avg_goals, home_adv = estimate_market_strengths(
+        matches, market_path=market_path, smooth=smooth
+    )
 
     played = matches.dropna(subset=["home_score", "away_score"])
     if played.empty:

@@ -29,7 +29,10 @@ may set a base home field bonus in rating points via the `home_field_advantage`
 function parameter or the `--elo-home-advantage` CLI option.
 The `spi` rating mimics FiveThirtyEight's approach by fitting a logistic
 regression of match results on the expected goal difference derived from the
-basic attack and defence factors.
+basic attack and defence factors. Before the regression, each team's attack and
+defence are scaled by its market value from `data/Brasileirao2025A.csv`.  The
+`estimate_spi_strengths` function accepts a ``market_path`` parameter to load a
+different CSV file.
 
 The script outputs the estimated chance of winning the title for each team. It then prints the probability of each side finishing in the bottom four and being relegated.
 It also estimates the average final position and points of every club.
