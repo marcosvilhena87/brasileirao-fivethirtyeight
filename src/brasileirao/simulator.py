@@ -298,8 +298,12 @@ def estimate_market_strengths(
     matches: pd.DataFrame,
     market_path: str | Path = "data/Brasileirao2025A.csv",
     smooth: float = 1.0,
-) -> tuple[dict[str, dict[str, float]], float, float, float, float]:
-    """Estimate strengths adjusted by team market values."""
+) -> tuple[dict[str, dict[str, float]], float, float]:
+    """Estimate strengths adjusted by team market values.
+
+    Returns the attack and defence strengths for each team, the overall
+    average goals per game and the baseline home advantage factor.
+    """
     strengths, avg_goals, home_adv = _estimate_strengths(matches, smooth=smooth)
 
     market_values = load_market_values(market_path)
