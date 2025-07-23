@@ -63,6 +63,11 @@ def main() -> None:
         default=0.5,
         help="Weight for leader_history influence",
     )
+    parser.add_argument(
+        "--market-path",
+        default="data/Brasileirao2025A.csv",
+        help="CSV with team market values for the spi rating method",
+    )
     args = parser.parse_args()
 
     matches = parse_matches(args.file)
@@ -76,6 +81,7 @@ def main() -> None:
         home_field_advantage=args.elo_home_advantage,
         leader_history_paths=args.leader_history_paths,
         leader_history_weight=args.leader_weight,
+        market_path=args.market_path,
     )
 
     relegation = simulate_relegation_chances(
@@ -87,6 +93,7 @@ def main() -> None:
         home_field_advantage=args.elo_home_advantage,
         leader_history_paths=args.leader_history_paths,
         leader_history_weight=args.leader_weight,
+        market_path=args.market_path,
     )
 
     table_proj = simulate_final_table(
@@ -98,6 +105,7 @@ def main() -> None:
         home_field_advantage=args.elo_home_advantage,
         leader_history_paths=args.leader_history_paths,
         leader_history_weight=args.leader_weight,
+        market_path=args.market_path,
     )
 
     # print("Title chances:")

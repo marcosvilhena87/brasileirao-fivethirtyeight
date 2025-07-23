@@ -751,6 +751,7 @@ def get_strengths(
     leader_history_paths: list[str | Path] | None = None,
     leader_history_weight: float = 0.5,
     smooth: float = 1.0,
+    market_path: str | Path = "data/Brasileirao2025A.csv",
 ) -> tuple[dict[str, dict[str, float]], float, float, float]:
     """Return strength estimates for ``matches`` using ``rating_method``.
 
@@ -766,6 +767,9 @@ def get_strengths(
         The estimated dispersion parameter of the Negative Binomial model.
     otherwise
         ``0.0``.
+
+    ``market_path`` is only used when ``rating_method`` is ``"spi"`` and points
+    to the CSV file with team market values.
     """
 
     extra_param = 0.0
@@ -784,7 +788,9 @@ def get_strengths(
     elif rating_method == "dixon_coles":
         strengths, avg_goals, home_adv, extra_param = estimate_dixon_coles_strengths(matches)
     elif rating_method == "spi":
-        strengths, avg_goals, home_adv, intercept, slope = estimate_spi_strengths(matches)
+        strengths, avg_goals, home_adv, intercept, slope = estimate_spi_strengths(
+            matches, market_path=market_path, smooth=smooth
+        )
         extra_param = (intercept, slope)
     elif rating_method == "leader_history":
         paths = leader_history_paths or ["data/Brasileirao2024A.txt"]
@@ -875,6 +881,7 @@ def simulate_chances(
     leader_history_paths: list[str | Path] | None = None,
     leader_history_weight: float = 0.5,
     smooth: float = 1.0,
+    market_path: str | Path = "data/Brasileirao2025A.csv",
 ) -> dict[str, float]:
     """Simulate remaining fixtures and return title probabilities.
 
@@ -904,6 +911,8 @@ def simulate_chances(
     smooth : float, default 1.0
         Smoothing constant added to goals scored and conceded when estimating
         team strengths under the ``"ratio"`` methods.
+    market_path : str | Path, default "data/Brasileirao2025A.csv"
+        CSV file with team market values used by the ``"spi"`` rating method.
     """
     if rng is None:
         rng = np.random.default_rng()
@@ -923,6 +932,7 @@ def simulate_chances(
         leader_history_paths=leader_history_paths,
         leader_history_weight=leader_history_weight,
         smooth=smooth,
+        market_path=market_path,
     )
     teams = pd.unique(matches[['home_team', 'away_team']].values.ravel())
     champs = {t: 0 for t in teams}
@@ -960,6 +970,7 @@ def simulate_relegation_chances(
     leader_history_paths: list[str | Path] | None = None,
     leader_history_weight: float = 0.5,
     smooth: float = 1.0,
+    market_path: str | Path = "data/Brasileirao2025A.csv",
 ) -> dict[str, float]:
     """Simulate remaining fixtures and return relegation probabilities.
 
@@ -970,6 +981,8 @@ def simulate_relegation_chances(
     the constant added to goals scored and conceded when calculating attack and
     defence ratings under the ``"ratio"`` methods. ``home_field_advantage`` only
     affects the Elo method.
+    market_path : str | Path, default "data/Brasileirao2025A.csv"
+        CSV file with team market values used by the ``"spi"`` rating method.
     """
 
     if rng is None:
@@ -990,6 +1003,7 @@ def simulate_relegation_chances(
         leader_history_paths=leader_history_paths,
         leader_history_weight=leader_history_weight,
         smooth=smooth,
+        market_path=market_path,
     )
 
     teams = pd.unique(matches[["home_team", "away_team"]].values.ravel())
@@ -1029,6 +1043,7 @@ def simulate_final_table(
     leader_history_paths: list[str | Path] | None = None,
     leader_history_weight: float = 0.5,
     smooth: float = 1.0,
+    market_path: str | Path = "data/Brasileirao2025A.csv",
 ) -> pd.DataFrame:
     """Project final league positions and points for each team.
 
@@ -1037,6 +1052,8 @@ def simulate_final_table(
     sorted by expected position.
     ``smooth`` has the same meaning as in :func:`simulate_chances`.
     ``home_field_advantage`` only affects the Elo method.
+    market_path : str | Path, default "data/Brasileirao2025A.csv"
+        CSV file with team market values used by the ``"spi"`` rating method.
     """
 
     if rng is None:
@@ -1057,6 +1074,7 @@ def simulate_final_table(
         leader_history_paths=leader_history_paths,
         leader_history_weight=leader_history_weight,
         smooth=smooth,
+        market_path=market_path,
     )
 
     teams = pd.unique(matches[["home_team", "away_team"]].values.ravel())
@@ -1108,6 +1126,7 @@ def summary_table(
     leader_history_paths: list[str | Path] | None = None,
     leader_history_weight: float = 0.5,
     smooth: float = 1.0,
+    market_path: str | Path = "data/Brasileirao2025A.csv",
 ) -> pd.DataFrame:
     """Return combined projections for each team.
 
@@ -1118,6 +1137,8 @@ def summary_table(
     functions.
     ``home_field_advantage`` is forwarded to the Elo-based rating routine and
     has no effect for other methods.
+    market_path : str | Path, default "data/Brasileirao2025A.csv"
+        CSV file with team market values used by the ``"spi"`` rating method.
     """
 
     chances = simulate_chances(
@@ -1131,6 +1152,7 @@ def summary_table(
         leader_history_paths=leader_history_paths,
         leader_history_weight=leader_history_weight,
         smooth=smooth,
+        market_path=market_path,
     )
     relegation = simulate_relegation_chances(
         matches,
@@ -1143,6 +1165,7 @@ def summary_table(
         leader_history_paths=leader_history_paths,
         leader_history_weight=leader_history_weight,
         smooth=smooth,
+        market_path=market_path,
     )
     table = simulate_final_table(
         matches,
@@ -1155,6 +1178,7 @@ def summary_table(
         leader_history_paths=leader_history_paths,
         leader_history_weight=leader_history_weight,
         smooth=smooth,
+        market_path=market_path,
     )
 
     table = table.sort_values("position").reset_index(drop=True)

@@ -26,7 +26,9 @@ argument of `simulate_chances`. The `leader_history` rating method adjusts
 strengths based on how often teams led past seasons; configure its behaviour
 with `--leader-history-paths` and `--leader-weight`. When using Elo ratings you
 may set a base home field bonus in rating points via the `home_field_advantage`
-function parameter or the `--elo-home-advantage` CLI option.
+function parameter or the `--elo-home-advantage` CLI option. When employing the
+`spi` rating you can override the default market values CSV via
+`--market-path`.
 The `spi` rating mimics FiveThirtyEight's approach by fitting a logistic
 regression of match results on the expected goal difference derived from the
 basic attack and defence factors. Before the regression, each team's attack and
