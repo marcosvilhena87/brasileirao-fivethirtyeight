@@ -441,6 +441,42 @@ def test_summary_table_spi_seed_repeatability():
     pd.testing.assert_frame_equal(table1, table2)
 
 
+def test_simulate_chances_spi_custom_market_path_changes_results():
+    df = parse_matches("data/Brasileirao2025A.txt")
+    rng = np.random.default_rng(77)
+    base = simulate_chances(df, iterations=20, rating_method="spi", rng=rng)
+    rng = np.random.default_rng(77)
+    custom = simulate_chances(
+        df,
+        iterations=20,
+        rating_method="spi",
+        rng=rng,
+        market_path="data/Brasileirao2024A.csv",
+    )
+    assert base != custom
+
+
+def test_summary_table_spi_custom_market_path_repeatability():
+    df = parse_matches("data/Brasileirao2025A.txt")
+    rng = np.random.default_rng(88)
+    t1 = simulator.summary_table(
+        df,
+        iterations=5,
+        rating_method="spi",
+        rng=rng,
+        market_path="data/Brasileirao2024A.csv",
+    )
+    rng = np.random.default_rng(88)
+    t2 = simulator.summary_table(
+        df,
+        iterations=5,
+        rating_method="spi",
+        rng=rng,
+        market_path="data/Brasileirao2024A.csv",
+    )
+    pd.testing.assert_frame_equal(t1, t2)
+
+
 def test_league_table_goal_difference_tiebreak():
     data = [
         {"date": "2025-01-01", "home_team": "A", "away_team": "B", "home_score": 1, "away_score": 2},
