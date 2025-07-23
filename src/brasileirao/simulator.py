@@ -617,6 +617,52 @@ def estimate_dixon_coles_strengths(matches: pd.DataFrame):
     return strengths, avg_goals, home_adv, rho
 
 
+def estimate_spi_strengths(matches: pd.DataFrame):
+    """Estimate strengths with a logistic regression on match outcomes.
+
+    The function first computes basic attack and defence factors using
+    :func:`_estimate_strengths`. It then derives the expected goal difference
+    for each played match and fits a multinomial logistic regression of the
+    win/draw/loss result on that value.  The regression coefficients are not
+    currently used further but the model mirrors the approach FiveThirtyEight
+    employ in their Soccer Power Index calculations.
+    """
+
+    strengths, avg_goals, home_adv = _estimate_strengths(matches)
+
+    played = matches.dropna(subset=["home_score", "away_score"])
+    if played.empty:
+        return strengths, avg_goals, home_adv
+
+    diffs: list[float] = []
+    outcomes: list[int] = []
+    for _, row in played.iterrows():
+        ht = row["home_team"]
+        at = row["away_team"]
+        mu_home = (
+            avg_goals
+            * strengths[ht]["attack"]
+            * strengths[at]["defense"]
+            * home_adv
+        )
+        mu_away = avg_goals * strengths[at]["attack"] * strengths[ht]["defense"]
+        diffs.append(mu_home - mu_away)
+        if row["home_score"] > row["away_score"]:
+            outcomes.append(2)
+        elif row["home_score"] == row["away_score"]:
+            outcomes.append(1)
+        else:
+            outcomes.append(0)
+
+    import statsmodels.api as sm
+
+    exog = sm.add_constant(pd.Series(diffs, name="diff"))
+    endog = pd.Series(outcomes, name="outcome")
+    sm.MNLogit(endog, exog).fit(disp=False)
+
+    return strengths, avg_goals, home_adv
+
+
 def _dixon_coles_sample(
     lam: float, mu: float, rho: float, rng: np.random.Generator, max_goals: int = 6
 ) -> tuple[int, int]:
@@ -686,6 +732,8 @@ def get_strengths(
         )
     elif rating_method == "dixon_coles":
         strengths, avg_goals, home_adv, extra_param = estimate_dixon_coles_strengths(matches)
+    elif rating_method == "spi":
+        strengths, avg_goals, home_adv = estimate_spi_strengths(matches)
     elif rating_method == "leader_history":
         paths = leader_history_paths or ["data/Brasileirao2024A.txt"]
         strengths, avg_goals, home_adv = estimate_leader_history_strengths(

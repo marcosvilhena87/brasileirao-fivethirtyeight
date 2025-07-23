@@ -12,7 +12,7 @@ python main.py --simulations 1000 --rating poisson
 ```
 
 The `--rating` option accepts `ratio` (default), `historic_ratio`, `poisson`,
-`neg_binom`, `skellam`, `dixon_coles`, `elo`, or `leader_history` to choose how team
+`neg_binom`, `skellam`, `dixon_coles`, `elo`, `spi`, or `leader_history` to choose how team
 strengths are estimated. The `skellam` method fits a regression to goal
 differences. The `historic_ratio` method
 mixes results from the 2024 season with a lower weight. The `elo` method
@@ -27,6 +27,9 @@ strengths based on how often teams led past seasons; configure its behaviour
 with `--leader-history-paths` and `--leader-weight`. When using Elo ratings you
 may set a base home field bonus in rating points via the `home_field_advantage`
 function parameter or the `--elo-home-advantage` CLI option.
+The `spi` rating mimics FiveThirtyEight's approach by fitting a logistic
+regression of match results on the expected goal difference derived from the
+basic attack and defence factors.
 
 The script outputs the estimated chance of winning the title for each team. It then prints the probability of each side finishing in the bottom four and being relegated.
 It also estimates the average final position and points of every club.
