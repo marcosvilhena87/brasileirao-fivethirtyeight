@@ -298,7 +298,7 @@ def estimate_market_strengths(
     matches: pd.DataFrame,
     market_path: str | Path = "data/Brasileirao2025A.csv",
     smooth: float = 1.0,
-) -> tuple[dict[str, dict[str, float]], float, float]:
+) -> tuple[dict[str, dict[str, float]], float, float, float, float]:
     """Estimate strengths adjusted by team market values."""
     strengths, avg_goals, home_adv = _estimate_strengths(matches, smooth=smooth)
 
@@ -661,11 +661,11 @@ def estimate_spi_strengths(
 
     The function first computes basic attack and defence factors using
     :func:`estimate_market_strengths`. It then derives the expected goal difference
-    for each played match and fits a multinomial logistic regression of the
-    win/draw/loss result on that value.  The regression coefficients are not
-    currently used further but the model mirrors the approach FiveThirtyEight
-    employ in their Soccer Power Index calculations. The ``market_path``
-    parameter can be used to supply a custom CSV file with team market values.
+    for each played match and fits a logistic regression of the home-win
+    indicator on that value.  The fitted intercept and slope are returned and
+    later used to transform expected goal differences into win/draw/loss
+    probabilities when simulating matches.  The ``market_path`` parameter can be
+    used to supply a custom CSV file with team market values.
     """
 
     strengths, avg_goals, home_adv = estimate_market_strengths(
@@ -674,7 +674,7 @@ def estimate_spi_strengths(
 
     played = matches.dropna(subset=["home_score", "away_score"])
     if played.empty:
-        return strengths, avg_goals, home_adv
+        return strengths, avg_goals, home_adv, 0.0, 0.0
 
     diffs: list[float] = []
     outcomes: list[int] = []
@@ -689,20 +689,17 @@ def estimate_spi_strengths(
         )
         mu_away = avg_goals * strengths[at]["attack"] * strengths[ht]["defense"]
         diffs.append(mu_home - mu_away)
-        if row["home_score"] > row["away_score"]:
-            outcomes.append(2)
-        elif row["home_score"] == row["away_score"]:
-            outcomes.append(1)
-        else:
-            outcomes.append(0)
+        outcomes.append(int(row["home_score"] > row["away_score"]))
 
     import statsmodels.api as sm
 
     exog = sm.add_constant(pd.Series(diffs, name="diff"))
-    endog = pd.Series(outcomes, name="outcome")
-    sm.MNLogit(endog, exog).fit(disp=False)
+    model = sm.Logit(outcomes, exog).fit(disp=False)
 
-    return strengths, avg_goals, home_adv
+    intercept = float(model.params["const"])
+    slope = float(model.params["diff"])
+
+    return strengths, avg_goals, home_adv, intercept, slope
 
 
 def _dixon_coles_sample(
@@ -731,6 +728,18 @@ def _dixon_coles_sample(
     probs = probs / total
     flat = rng.choice((max_goals + 1) ** 2, p=probs.ravel())
     return int(flat // (max_goals + 1)), int(flat % (max_goals + 1))
+
+
+def _spi_probs(diff: float, coeffs: tuple[float, float]) -> tuple[float, float, float]:
+    """Return win/draw/loss probabilities for a goal difference."""
+    intercept, slope = coeffs
+    home = 1.0 / (1.0 + np.exp(-(intercept + slope * diff)))
+    away = 1.0 / (1.0 + np.exp(-(intercept - slope * diff)))
+    draw = max(0.0, 1.0 - home - away)
+    total = home + draw + away
+    if total <= 0:
+        return 1 / 3, 1 / 3, 1 / 3
+    return home / total, draw / total, away / total
 
 
 def get_strengths(
@@ -775,7 +784,8 @@ def get_strengths(
     elif rating_method == "dixon_coles":
         strengths, avg_goals, home_adv, extra_param = estimate_dixon_coles_strengths(matches)
     elif rating_method == "spi":
-        strengths, avg_goals, home_adv = estimate_spi_strengths(matches)
+        strengths, avg_goals, home_adv, intercept, slope = estimate_spi_strengths(matches)
+        extra_param = (intercept, slope)
     elif rating_method == "leader_history":
         paths = leader_history_paths or ["data/Brasileirao2024A.txt"]
         strengths, avg_goals, home_adv = estimate_leader_history_strengths(
@@ -795,7 +805,7 @@ def _simulate_table(
     home_adv: float,
     team_home_advantages: dict[str, float],
     rating_method: str,
-    extra_param: float,
+    extra_param: float | tuple[float, float],
     rng: np.random.Generator,
 ) -> pd.DataFrame:
     """Return a simulated table based on remaining fixtures."""
@@ -821,6 +831,23 @@ def _simulate_table(
             p_away = r / (r + mu_away)
             hs = rng.negative_binomial(r, p_home)
             as_ = rng.negative_binomial(r, p_away)
+        elif rating_method == "spi" and isinstance(extra_param, tuple):
+            probs = _spi_probs(mu_home - mu_away, extra_param)
+            outcome = rng.choice(["H", "D", "A"], p=probs)
+            for _ in range(25):
+                hs = rng.poisson(mu_home)
+                as_ = rng.poisson(mu_away)
+                if (outcome == "H" and hs > as_) or (
+                    outcome == "D" and hs == as_
+                ) or (outcome == "A" and hs < as_):
+                    break
+            else:
+                if outcome == "H" and hs <= as_:
+                    hs = as_ + 1
+                elif outcome == "A" and hs >= as_:
+                    as_ = hs + 1
+                elif outcome == "D":
+                    as_ = hs
         else:
             hs = rng.poisson(mu_home)
             as_ = rng.poisson(mu_away)

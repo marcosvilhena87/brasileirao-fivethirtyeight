@@ -423,6 +423,24 @@ def test_summary_table_deterministic_columns():
     assert {"position", "team", "points", "title", "relegation"}.issubset(table1.columns)
 
 
+def test_simulate_final_table_spi_seed_repeatability():
+    df = parse_matches("data/Brasileirao2025A.txt")
+    rng = np.random.default_rng(202)
+    table1 = simulator.simulate_final_table(df, iterations=5, rating_method="spi", rng=rng)
+    rng = np.random.default_rng(202)
+    table2 = simulator.simulate_final_table(df, iterations=5, rating_method="spi", rng=rng)
+    pd.testing.assert_frame_equal(table1, table2)
+
+
+def test_summary_table_spi_seed_repeatability():
+    df = parse_matches("data/Brasileirao2025A.txt")
+    rng = np.random.default_rng(303)
+    table1 = simulator.summary_table(df, iterations=5, rating_method="spi", rng=rng)
+    rng = np.random.default_rng(303)
+    table2 = simulator.summary_table(df, iterations=5, rating_method="spi", rng=rng)
+    pd.testing.assert_frame_equal(table1, table2)
+
+
 def test_league_table_goal_difference_tiebreak():
     data = [
         {"date": "2025-01-01", "home_team": "A", "away_team": "B", "home_score": 1, "away_score": 2},
