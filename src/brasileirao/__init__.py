@@ -12,6 +12,7 @@ from .simulator import (
     compute_leader_stats,
     estimate_leader_history_strengths,
 )
+from .evaluate import evaluate_methods
 
 __all__ = [
     "parse_matches",
@@ -24,5 +25,6 @@ __all__ = [
     "estimate_spi_strengths",
     "compute_leader_stats",
     "estimate_leader_history_strengths",
+    "evaluate_methods",
 ]
 
