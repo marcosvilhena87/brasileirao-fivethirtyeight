@@ -64,6 +64,12 @@ def main() -> None:
         help="Weight for leader_history influence",
     )
     parser.add_argument(
+        "--smooth",
+        type=float,
+        default=1.0,
+        help="Smoothing constant for ratio-based ratings",
+    )
+    parser.add_argument(
         "--market-path",
         default="data/Brasileirao2025A.csv",
         help="CSV with team market values for the spi rating method",
@@ -81,6 +87,7 @@ def main() -> None:
         home_field_advantage=args.elo_home_advantage,
         leader_history_paths=args.leader_history_paths,
         leader_history_weight=args.leader_weight,
+        smooth=args.smooth,
         market_path=args.market_path,
     )
 
@@ -93,6 +100,7 @@ def main() -> None:
         home_field_advantage=args.elo_home_advantage,
         leader_history_paths=args.leader_history_paths,
         leader_history_weight=args.leader_weight,
+        smooth=args.smooth,
         market_path=args.market_path,
     )
 
@@ -105,6 +113,7 @@ def main() -> None:
         home_field_advantage=args.elo_home_advantage,
         leader_history_paths=args.leader_history_paths,
         leader_history_weight=args.leader_weight,
+        smooth=args.smooth,
         market_path=args.market_path,
     )
 

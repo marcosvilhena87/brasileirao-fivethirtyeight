@@ -22,7 +22,9 @@ function exposes an `elo_k` parameter for deterministic runs. Use the
 factor (default `20.0`). Use the `--seed` option to set a random seed and
 reproduce a specific simulation. You can also specify team-specific home
 advantage multipliers by passing a dictionary to the `team_home_advantages`
-argument of `simulate_chances`. The `leader_history` rating method adjusts
+argument of `simulate_chances`. The ratio-based ratings add a smoothing constant
+to goals scored and conceded which can be changed with `--smooth` (default
+`1.0`). The `leader_history` rating method adjusts
 strengths based on how often teams led past seasons; configure its behaviour
 with `--leader-history-paths` and `--leader-weight`. When using Elo ratings you
 may set a base home field bonus in rating points via the `home_field_advantage`
