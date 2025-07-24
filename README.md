@@ -41,6 +41,19 @@ simulation.
 The script outputs the estimated chance of winning the title for each team. It then prints the probability of each side finishing in the bottom four and being relegated.
 It also estimates the average final position and points of every club.
 
+## Evaluation
+
+To measure how well the different rating methods predict real results you can run
+the evaluator on a past season file.  The command below scores a few methods on
+the 2024 season using the Brier metric:
+
+```bash
+python -m brasileirao.evaluate data/Brasileirao2024A.txt --methods ratio poisson elo
+```
+
+The output lists the Brier score for each method; lower values indicate better
+probability forecasts.
+
 ## Tie-break Rules
 
 When building the league table teams are ordered using the official Série A
