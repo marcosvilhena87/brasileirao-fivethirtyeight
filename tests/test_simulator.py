@@ -164,6 +164,25 @@ def test_elo_k_value_changes_results():
     assert chances_low != chances_high
 
 
+def test_smooth_value_changes_results():
+    df = parse_matches('data/Brasileirao2025A.txt')
+    rng = np.random.default_rng(55)
+    base = simulate_chances(
+        df,
+        iterations=5,
+        rng=rng,
+        smooth=0.5,
+    )
+    rng = np.random.default_rng(55)
+    alt = simulate_chances(
+        df,
+        iterations=5,
+        rng=rng,
+        smooth=2.0,
+    )
+    assert base != alt
+
+
 def test_simulate_chances_neg_binom_seed_repeatability():
     df = parse_matches('data/Brasileirao2025A.txt')
     rng = np.random.default_rng(7)
