@@ -1,15 +1,15 @@
 GamesBegin
 TeamListedFirst: home
-29/03/2025	Cruzeiro		Mirassol
-29/03/2025	Gremio			Atletico-MG
-29/03/2025	Fortaleza		Fluminense
-29/03/2025	Sao Paulo		Sport
-29/03/2025	Juventude		Vitoria
-29/03/2025	Flamengo		Internacional
-30/03/2025	Palmeiras		Botafogo
-30/03/2025	Vasco			Santos
-30/03/2025	Bahia			Corinthians
-31/03/2025	Bragantino		Ceara
+29/03/2025	Cruzeiro	2-1	Mirassol
+29/03/2025	Gremio		2-1	Atletico-MG
+29/03/2025	Fortaleza	2-0	Fluminense
+29/03/2025	Sao Paulo	0-0	Sport
+29/03/2025	Juventude	2-0	Vitoria
+29/03/2025	Flamengo	1-1	Internacional
+30/03/2025	Palmeiras	0-0	Botafogo
+30/03/2025	Vasco		2-1	Santos
+30/03/2025	Bahia		1-1	Corinthians
+31/03/2025	Bragantino	2-2	Ceara
 05/04/2025	Ceara			Gremio
 05/04/2025	Corinthians		Vasco
 05/04/2025	Botafogo		Juventude
