@@ -358,6 +358,66 @@ def estimate_market_strengths(
     return strengths, avg_goals, home_adv
 
 
+def update_spi_ratings(
+    strengths: dict[str, dict[str, float]],
+    home_team: str,
+    away_team: str,
+    home_goals: float,
+    away_goals: float,
+    avg_goals: float,
+    home_adv: float,
+    *,
+    K: float = 0.05,
+) -> tuple[float, float]:
+    """Update SPI-style ratings after a single match.
+
+    Parameters
+    ----------
+    strengths : dict[str, dict[str, float]]
+        Current attack and defence multipliers for each team.
+    home_team, away_team : str
+        Competing teams.
+    home_goals, away_goals : float
+        Observed goals scored by the home and away side.
+    avg_goals : float
+        Baseline average goals per game.
+    home_adv : float
+        League-wide home advantage factor.
+    K : float, default 0.05
+        Update magnitude. Higher values produce larger rating changes.
+
+    Returns
+    -------
+    tuple[float, float]
+        Expected goals for the home and away team prior to the update.
+    """
+
+    mu_home = (
+        avg_goals
+        * strengths[home_team]["attack"]
+        * strengths[away_team]["defense"]
+        * home_adv
+    )
+    mu_away = (
+        avg_goals * strengths[away_team]["attack"] * strengths[home_team]["defense"]
+    )
+
+    scale_home = np.exp(K * (home_goals - mu_home) / avg_goals)
+    scale_away = np.exp(K * (away_goals - mu_away) / avg_goals)
+
+    strengths[home_team]["attack"] *= scale_home
+    strengths[away_team]["defense"] *= scale_home
+    strengths[away_team]["attack"] *= scale_away
+    strengths[home_team]["defense"] *= scale_away
+
+    # keep ratings positive
+    for t in (home_team, away_team):
+        strengths[t]["attack"] = max(strengths[t]["attack"], 0.01)
+        strengths[t]["defense"] = max(strengths[t]["defense"], 0.01)
+
+    return mu_home, mu_away
+
+
 def estimate_strengths_with_history(
     current_matches: pd.DataFrame | None = None,
     past_path: str | Path = "data/Brasileirao2024A.txt",
@@ -714,6 +774,8 @@ def estimate_spi_strengths(
     market_path: str | Path = "data/Brasileirao2025A.csv",
     smooth: float = 1.0,
     decay_rate: float | None = None,
+    *,
+    K: float = 0.05,
 ) -> tuple[dict[str, dict[str, float]], float, float, float, float]:
     """Estimate strengths with a logistic regression on match outcomes.
 
@@ -725,14 +787,15 @@ def estimate_spi_strengths(
     probabilities when simulating matches.  The function returns five values:
     the strengths dictionary, average goals per game, baseline home advantage,
     intercept and slope.  The ``market_path`` parameter can be used to supply a
-    custom CSV file with team market values.
+    custom CSV file with team market values.  ``K`` controls the magnitude
+    of rating updates after each played match.
     """
 
     strengths, avg_goals, home_adv = estimate_market_strengths(
         matches, market_path=market_path, smooth=smooth, decay_rate=decay_rate
     )
 
-    played = matches.dropna(subset=["home_score", "away_score"])
+    played = matches.dropna(subset=["home_score", "away_score"]).sort_values("date")
     if played.empty:
         return (
             strengths,
@@ -747,13 +810,16 @@ def estimate_spi_strengths(
     for _, row in played.iterrows():
         ht = row["home_team"]
         at = row["away_team"]
-        mu_home = (
-            avg_goals
-            * strengths[ht]["attack"]
-            * strengths[at]["defense"]
-            * home_adv
+        mu_home, mu_away = update_spi_ratings(
+            strengths,
+            ht,
+            at,
+            float(row["home_score"]),
+            float(row["away_score"]),
+            avg_goals,
+            home_adv,
+            K=K,
         )
-        mu_away = avg_goals * strengths[at]["attack"] * strengths[ht]["defense"]
         diffs.append(mu_home - mu_away)
         outcomes.append(int(row["home_score"] > row["away_score"]))
 
