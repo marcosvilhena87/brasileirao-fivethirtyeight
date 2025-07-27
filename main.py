@@ -20,7 +20,7 @@ def main() -> None:
     parser.add_argument("--simulations", type=int, default=1000, help="number of simulation runs")
     parser.add_argument(
         "--rating",
-        default="ratio",
+        default="spi",
         choices=[
             "ratio",
             "historic_ratio",
