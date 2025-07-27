@@ -15,6 +15,10 @@ The simulator uses a FiveThirtyEight-style model (SPI) to estimate team
 strengths. Use the `--market-path` option to specify an alternative CSV with
 team market values. The `--seed` argument sets the random seed for reproducible
 results.
+The `--rating-method` option chooses the algorithm used to rate teams, for
+example `elo` or `poisson` instead of the default `spi`. When using the SPI
+methods, you can pass `--seasons YEAR YEAR ...` to recompute the logistic
+regression coefficients from those past seasons.
 The `spi` rating mimics FiveThirtyEight's approach by fitting a logistic
 regression of match results on the expected goal difference derived from the
 basic attack and defence factors. Before the regression, each team's attack and

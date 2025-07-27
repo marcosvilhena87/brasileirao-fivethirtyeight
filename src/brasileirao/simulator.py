@@ -1169,6 +1169,7 @@ def get_strengths(
     smooth: float = 1.0,
     market_path: str | Path = "data/Brasileirao2025A.csv",
     decay_rate: float | None = None,
+    seasons: list[str] | None = None,
 ) -> tuple[dict[str, dict[str, float]], float, float, float]:
     """Return strength estimates for ``matches`` using ``rating_method``.
 
@@ -1187,6 +1188,8 @@ def get_strengths(
 
     ``market_path`` is only used when ``rating_method`` is ``"spi"`` or
     ``"initial_spi"`` and points to the CSV file with team market values.
+    ``seasons`` may provide a list of past years for recalculating the SPI
+    coefficients when ``rating_method`` is ``"spi"`` or ``"initial_spi"``.
     """
 
     extra_param = 0.0
@@ -1220,6 +1223,15 @@ def get_strengths(
         strengths, avg_goals, home_adv, intercept, slope = estimate_spi_strengths(
             matches, market_path=market_path, smooth=smooth, decay_rate=decay_rate
         )
+        if seasons is not None:
+            from .spi_coeffs import compute_spi_coeffs
+
+            intercept, slope = compute_spi_coeffs(
+                seasons=seasons,
+                market_path=market_path,
+                smooth=smooth,
+                decay_rate=decay_rate or 0.0,
+            )
         extra_param = (intercept, slope)
     elif rating_method == "initial_spi":
         (
@@ -1229,7 +1241,10 @@ def get_strengths(
             intercept,
             slope,
         ) = initial_spi_strengths(
-            market_path=market_path, smooth=smooth, decay_rate=decay_rate
+            market_path=market_path,
+            smooth=smooth,
+            decay_rate=decay_rate,
+            seasons=seasons,
         )
         extra_param = (intercept, slope)
     elif rating_method == "initial_ratio":
@@ -1339,6 +1354,7 @@ def simulate_chances(
     smooth: float = 1.0,
     market_path: str | Path = "data/Brasileirao2025A.csv",
     decay_rate: float | None = None,
+    seasons: list[str] | None = None,
 ) -> dict[str, float]:
     """Simulate remaining fixtures and return title probabilities.
 
@@ -1374,6 +1390,9 @@ def simulate_chances(
     decay_rate : float | None, optional
         Exponential decay factor applied to older matches when estimating
         strengths. ``None`` or ``0`` gives equal weight to all results.
+    seasons : list[str] | None, optional
+        Seasons to recompute SPI coefficients for the ``"spi"`` and
+        ``"initial_spi"`` rating methods.
     """
     if rng is None:
         rng = np.random.default_rng()
@@ -1395,6 +1414,7 @@ def simulate_chances(
         smooth=smooth,
         market_path=market_path,
         decay_rate=decay_rate,
+        seasons=seasons,
     )
     teams = pd.unique(matches[['home_team', 'away_team']].values.ravel())
     champs = {t: 0 for t in teams}
@@ -1434,6 +1454,7 @@ def simulate_relegation_chances(
     smooth: float = 1.0,
     market_path: str | Path = "data/Brasileirao2025A.csv",
     decay_rate: float | None = None,
+    seasons: list[str] | None = None,
 ) -> dict[str, float]:
     """Simulate remaining fixtures and return relegation probabilities.
 
@@ -1450,6 +1471,9 @@ def simulate_relegation_chances(
     decay_rate : float | None, optional
         Exponential decay factor applied to older matches when estimating
         strengths. ``None`` or ``0`` gives equal weight to all results.
+    seasons : list[str] | None, optional
+        Seasons to recompute SPI coefficients for the ``"spi"`` and
+        ``"initial_spi"`` rating methods.
     """
 
     if rng is None:
@@ -1472,6 +1496,7 @@ def simulate_relegation_chances(
         smooth=smooth,
         market_path=market_path,
         decay_rate=decay_rate,
+        seasons=seasons,
     )
 
     teams = pd.unique(matches[["home_team", "away_team"]].values.ravel())
@@ -1513,6 +1538,7 @@ def simulate_final_table(
     smooth: float = 1.0,
     market_path: str | Path = "data/Brasileirao2025A.csv",
     decay_rate: float | None = None,
+    seasons: list[str] | None = None,
 ) -> pd.DataFrame:
     """Project final league positions and points for each team.
 
@@ -1527,6 +1553,9 @@ def simulate_final_table(
     decay_rate : float | None, optional
         Exponential decay factor applied to older matches when estimating
         strengths. ``None`` or ``0`` gives equal weight to all results.
+    seasons : list[str] | None, optional
+        Seasons to recompute SPI coefficients for the ``"spi"`` and
+        ``"initial_spi"`` rating methods.
     """
 
     if rng is None:
@@ -1549,6 +1578,7 @@ def simulate_final_table(
         smooth=smooth,
         market_path=market_path,
         decay_rate=decay_rate,
+        seasons=seasons,
     )
 
     teams = pd.unique(matches[["home_team", "away_team"]].values.ravel())
