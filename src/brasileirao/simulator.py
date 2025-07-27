@@ -20,8 +20,13 @@ def _parse_date(date_str: str) -> pd.Timestamp:
         return pd.to_datetime(date_str, format="%d/%m/%Y")
     return pd.to_datetime(date_str, format="%m/%d/%y")
 
-SCORE_PATTERN = re.compile(r"(\d+/\d+/\d+)\s+(.+?)\s+(\d+)-(\d+)\s+(.+?)\s*(?:\(ID:.*)?$")
-NOSCORE_PATTERN = re.compile(r"(\d+/\d+/\d+)\s+(.+?)\s{2,}(.+?)\s*(?:\(ID:.*)?$")
+
+SCORE_PATTERN = re.compile(
+    r"(\d+/\d+/\d+)\s+(.+?)\s+(\d+)-(\d+)\s+(.+?)\s*(?:\(ID:.*)?$"
+)
+NOSCORE_PATTERN = re.compile(
+    r"(\d+/\d+/\d+)\s+(.+?)\s{2,}(.+?)\s*(?:\(ID:.*)?$"
+)
 
 
 def parse_matches(path: str | Path) -> pd.DataFrame:
@@ -62,7 +67,9 @@ def parse_matches(path: str | Path) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def _head_to_head_points(matches: pd.DataFrame, teams: list[str]) -> dict[str, int]:
+def _head_to_head_points(
+    matches: pd.DataFrame, teams: list[str]
+) -> dict[str, int]:
     """Return points won in games among ``teams``."""
     points = {t: 0 for t in teams}
     df = matches.dropna(subset=["home_score", "away_score"])
@@ -86,7 +93,15 @@ def league_table(matches: pd.DataFrame) -> pd.DataFrame:
     """Compute league standings from match results."""
     teams = pd.unique(matches[["home_team", "away_team"]].values.ravel())
     table = {
-        t: {"team": t, "played": 0, "wins": 0, "draws": 0, "losses": 0, "gf": 0, "ga": 0}
+        t: {
+            "team": t,
+            "played": 0,
+            "wins": 0,
+            "draws": 0,
+            "losses": 0,
+            "gf": 0,
+            "ga": 0,
+        }
         for t in teams
     }
 
@@ -256,12 +271,24 @@ def _estimate_strengths(
         away_mask = played.away_team == team
 
         gf = (
-            (played.loc[home_mask, "home_score"] * played.loc[home_mask, "weight"]).sum()
-            + (played.loc[away_mask, "away_score"] * played.loc[away_mask, "weight"]).sum()
+            (
+                played.loc[home_mask, "home_score"]
+                * played.loc[home_mask, "weight"]
+            ).sum()
+            + (
+                played.loc[away_mask, "away_score"]
+                * played.loc[away_mask, "weight"]
+            ).sum()
         )
         ga = (
-            (played.loc[home_mask, "away_score"] * played.loc[home_mask, "weight"]).sum()
-            + (played.loc[away_mask, "home_score"] * played.loc[away_mask, "weight"]).sum()
+            (
+                played.loc[home_mask, "away_score"]
+                * played.loc[home_mask, "weight"]
+            ).sum()
+            + (
+                played.loc[away_mask, "home_score"]
+                * played.loc[away_mask, "weight"]
+            ).sum()
         )
         gp = played.loc[home_mask | away_mask, "weight"].sum()
         if gp == 0:
@@ -329,7 +356,9 @@ def _estimate_dispersion(matches: pd.DataFrame) -> float:
     return (alpha_home + alpha_away) / 2
 
 
-def load_market_values(path: str | Path = "data/Brasileirao2025A.csv") -> dict[str, float]:
+def load_market_values(
+    path: str | Path = "data/Brasileirao2025A.csv",
+) -> dict[str, float]:
     """Return team market values from ``path``.
 
     The CSV file is semicolon-delimited and may start with a UTF-8 BOM.
@@ -443,7 +472,10 @@ def estimate_strengths_with_history(
         current_matches = parse_matches("data/Brasileirao2025A.txt")
     past_matches = parse_matches(past_path)
     if 0 < past_weight < 1:
-        past_matches = past_matches.sample(frac=past_weight, random_state=0).reset_index(drop=True)
+        past_matches = (
+            past_matches.sample(frac=past_weight, random_state=0)
+            .reset_index(drop=True)
+        )
     combined = pd.concat([current_matches, past_matches], ignore_index=True)
     return _estimate_strengths(combined, smooth=smooth, decay_rate=decay_rate)
 
@@ -731,7 +763,7 @@ def estimate_dixon_coles_strengths(matches: pd.DataFrame):
         attack = np.zeros(n)
         defense = np.zeros(n)
         attack[1:] = params[: n - 1]
-        defense[1:] = params[n - 1 : 2 * (n - 1)]
+        defense[1:] = params[n - 1:2 * (n - 1)]
         home_param = params[-2]
         rho = params[-1]
 
@@ -761,7 +793,7 @@ def estimate_dixon_coles_strengths(matches: pd.DataFrame):
     attack = np.zeros(n)
     defense = np.zeros(n)
     attack[1:] = params[: n - 1]
-    defense[1:] = params[n - 1 : 2 * (n - 1)]
+    defense[1:] = params[n - 1:2 * (n - 1)]
     attack -= np.mean(attack)
     defense -= np.mean(defense)
 
@@ -979,8 +1011,16 @@ def initial_points_market_strengths(
     teams = set(points) | set(market_values)
     strengths: dict[str, dict[str, float]] = {}
     for team in teams:
-        p_ratio = points.get(team, mean_points) / mean_points if mean_points else 1.0
-        m_ratio = market_values.get(team, mean_market) / mean_market if mean_market else 1.0
+        p_ratio = (
+            points.get(team, mean_points) / mean_points
+            if mean_points
+            else 1.0
+        )
+        m_ratio = (
+            market_values.get(team, mean_market) / mean_market
+            if mean_market
+            else 1.0
+        )
         ratio = points_weight * p_ratio + market_weight * m_ratio
         strengths[team] = {"attack": ratio, "defense": 1.0 / ratio}
 
@@ -1062,7 +1102,12 @@ def get_strengths(
     if rating_method == "poisson":
         strengths, avg_goals, home_adv = estimate_poisson_strengths(matches)
     elif rating_method == "neg_binom":
-        strengths, avg_goals, home_adv, extra_param = estimate_negative_binomial_strengths(matches)
+        (
+            strengths,
+            avg_goals,
+            home_adv,
+            extra_param,
+        ) = estimate_negative_binomial_strengths(matches)
     elif rating_method == "skellam":
         strengths, avg_goals, home_adv = estimate_skellam_strengths(matches)
     elif rating_method == "historic_ratio":
@@ -1074,7 +1119,12 @@ def get_strengths(
             matches, K=elo_k, home_field_advantage=home_field_advantage
         )
     elif rating_method == "dixon_coles":
-        strengths, avg_goals, home_adv, extra_param = estimate_dixon_coles_strengths(matches)
+        (
+            strengths,
+            avg_goals,
+            home_adv,
+            extra_param,
+        ) = estimate_dixon_coles_strengths(matches)
     elif rating_method == "spi":
         strengths, avg_goals, home_adv, intercept, slope = estimate_spi_strengths(
             matches, market_path=market_path, smooth=smooth, decay_rate=decay_rate
@@ -1104,7 +1154,11 @@ def get_strengths(
     elif rating_method == "leader_history":
         paths = leader_history_paths or ["data/Brasileirao2024A.txt"]
         strengths, avg_goals, home_adv = estimate_leader_history_strengths(
-            matches, paths, weight=leader_history_weight, smooth=smooth, decay_rate=decay_rate
+            matches,
+            paths,
+            weight=leader_history_weight,
+            smooth=smooth,
+            decay_rate=decay_rate,
         )
     else:
         strengths, avg_goals, home_adv = _estimate_strengths(
@@ -1294,7 +1348,7 @@ def simulate_relegation_chances(
 
     The parameters mirror :func:`simulate_chances`. The returned values map
     each team to the probability of finishing in the bottom four positions.
-    
+
     Parameters are the same as for :func:`simulate_chances`. ``smooth`` controls
     the constant added to goals scored and conceded when calculating attack and
     defence ratings under the ``"ratio"`` methods. ``home_field_advantage`` only

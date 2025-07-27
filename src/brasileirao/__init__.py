@@ -27,4 +27,3 @@ __all__ = [
     "SPI_DEFAULT_INTERCEPT",
     "SPI_DEFAULT_SLOPE",
 ]
-
