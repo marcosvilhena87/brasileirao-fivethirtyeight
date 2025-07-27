@@ -28,13 +28,19 @@ The helper ``initial_spi_strengths`` can be used at the start of a season to
 shrink each team's previous rating towards the league average following
 ``current = previous × weight + mean × (1 − weight)``.
 
+The ``compute_spi_coeffs`` helper scans the ``data/`` folder for past seasons
+and recalculates the logistic regression intercept and slope.  Seasons can be
+specified via the ``BRASILEIRAO_SEASONS`` environment variable or the
+``--seasons`` argument of the ``spi_coeffs`` module.  When no historical files
+are present the default coefficients above are returned.
+
 To recompute these coefficients yourself run:
 
 ```bash
 PYTHONPATH=src python -m brasileirao.spi_coeffs
 ```
-This command loads the 2023 and 2024 fixtures and prints the fitted
-intercept and slope.
+By default all seasons in ``data/`` are used.  You may pass ``--seasons`` or set
+``BRASILEIRAO_SEASONS`` to limit the years included.
 
 The script outputs the estimated chance of winning the title for each team. It
 then prints the probability of each side finishing in the bottom four and being
