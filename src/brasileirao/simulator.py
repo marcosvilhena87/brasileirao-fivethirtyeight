@@ -273,8 +273,14 @@ def _estimate_strengths(
     return strengths, avg_goals, home_adv
 
 
-def _estimate_team_home_advantages(matches: pd.DataFrame) -> dict[str, float]:
-    """Return relative home advantage factors for each team."""
+def _estimate_team_home_advantages(
+    matches: pd.DataFrame, factors: dict[str, float] | None = None
+) -> dict[str, float]:
+    """Return relative home advantage factors for each team.
+
+    When ``factors`` is supplied the dictionary is updated in-place so the
+    caller can maintain values across seasons.
+    """
     played = matches.dropna(subset=["home_score", "away_score"])
 
     if played.empty:
@@ -286,20 +292,27 @@ def _estimate_team_home_advantages(matches: pd.DataFrame) -> dict[str, float]:
     total_away = played["away_score"].sum()
     baseline = total_home / total_away if total_away else 1.0
 
-    factors = {}
+    results = {}
     for t in teams:
         home_games = played[played.home_team == t]
         away_games = played[played.away_team == t]
         if not len(home_games) or not len(away_games):
-            factors[t] = 1.0
+            results[t] = 1.0
             continue
         home_gpg = home_games["home_score"].mean()
         away_gpg = away_games["away_score"].mean()
         if away_gpg == 0 or np.isnan(home_gpg) or np.isnan(away_gpg):
-            factors[t] = 1.0
+            results[t] = 1.0
         else:
-            factors[t] = float((home_gpg / away_gpg) / baseline)
-    return factors
+            results[t] = float((home_gpg / away_gpg) / baseline)
+
+    if factors is not None:
+        for t in results:
+            factors[t] = results[t]
+        for t in factors:
+            factors.setdefault(t, 1.0)
+        return factors
+    return results
 
 
 def _estimate_dispersion(matches: pd.DataFrame) -> float:
