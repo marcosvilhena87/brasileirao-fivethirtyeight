@@ -176,3 +176,13 @@ def test_spi_coeffs_accepts_market_mapping():
 
     assert np.isclose(mapped[0], constant[0])
     assert np.isclose(mapped[1], constant[1])
+
+
+def test_logistic_decay_changes_spi_coeffs():
+    df = parse_matches("data/Brasileirao2025A.txt")
+    base = estimate_spi_strengths(df)
+    decayed = estimate_spi_strengths(df, logistic_decay=0.01)
+
+    assert not (
+        np.isclose(base[3], decayed[3]) and np.isclose(base[4], decayed[4])
+    )

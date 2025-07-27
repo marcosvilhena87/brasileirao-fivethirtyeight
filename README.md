@@ -21,6 +21,9 @@ The simulator uses a FiveThirtyEight-style model (SPI) to estimate team
 strengths. Use the `--market-path` option to specify an alternative CSV with
 team market values. The `--seed` argument sets the random seed for reproducible
 results.
+Use `--logistic-decay` to weight recent games more heavily when fitting the
+SPI logistic regression. A fixture played `d` days before the most recent one
+receives weight `exp(-logistic_decay * d)`.
 The `--rating-method` option chooses the algorithm used to rate teams, for
 example `elo` or `poisson` instead of the default `spi`. When using the SPI
 methods, you can pass `--seasons YEAR YEAR ...` to recompute the logistic
@@ -68,6 +71,8 @@ PYTHONPATH=src python -m brasileirao.spi_coeffs
 By default all seasons in ``data/`` are used.  You may pass ``--seasons`` or set
 ``BRASILEIRAO_SEASONS`` to limit the years included.  ``--decay-rate`` controls
 how quickly older seasons lose influence.
+``logistic_decay`` can be set in the simulation functions to apply a similar
+exponential weight to recent fixtures when fitting the SPI logistic regression.
 
 The script outputs the estimated chance of winning the title for each team. It
 then prints the probability of each side finishing in the bottom four and being
