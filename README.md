@@ -26,8 +26,9 @@ defence are scaled by its market value from `data/Brasileirao2025A.csv`.  The
 `estimate_spi_strengths` function accepts a ``market_path`` parameter to load a
 different CSV file.  The fitted intercept and slope are used to convert an
 expected goal difference into win/draw/loss probabilities during the
-simulation. When no matches have been played the function returns default
-coefficients of ``-0.180149`` and ``0.228628`` based on the 2023–2024 seasons.
+simulation. When no matches have been played the intercept and slope are
+automatically derived from the available seasons using ``compute_spi_coeffs``
+instead of returning the hard-coded ``-0.180149`` and ``0.228628`` defaults.
 The helper ``initial_spi_strengths`` can be used at the start of a season to
 shrink each team's previous rating towards the league average following
 ``current = previous × weight + mean × (1 − weight)``.

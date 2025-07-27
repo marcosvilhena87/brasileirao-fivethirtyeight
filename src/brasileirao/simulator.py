@@ -846,12 +846,15 @@ def estimate_spi_strengths(
 
     played = matches.dropna(subset=["home_score", "away_score"]).sort_values("date")
     if played.empty:
+        from .spi_coeffs import compute_spi_coeffs
+
+        intercept, slope = compute_spi_coeffs()
         return (
             strengths,
             avg_goals,
             home_adv,
-            SPI_DEFAULT_INTERCEPT,
-            SPI_DEFAULT_SLOPE,
+            intercept,
+            slope,
         )
 
     diffs: list[float] = []
