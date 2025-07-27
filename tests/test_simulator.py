@@ -186,3 +186,13 @@ def test_logistic_decay_changes_spi_coeffs():
     assert not (
         np.isclose(base[3], decayed[3]) and np.isclose(base[4], decayed[4])
     )
+
+
+def test_estimate_spi_strengths_seasons_changes_coeffs():
+    df = parse_matches("data/Brasileirao2025A.txt")
+    default = estimate_spi_strengths(df)
+    overriden = estimate_spi_strengths(df, seasons=["2023", "2024"])
+
+    assert not (
+        np.isclose(default[3], overriden[3]) and np.isclose(default[4], overriden[4])
+    )
