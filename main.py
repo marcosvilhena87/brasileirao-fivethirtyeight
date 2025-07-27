@@ -68,6 +68,15 @@ def main() -> None:
         nargs="*",
         help="historical seasons for SPI-based methods",
     )
+    parser.add_argument(
+        "--logistic-decay",
+        type=float,
+        default=None,
+        help=(
+            "exponential weight for recent matches when fitting the SPI "
+            "logistic regression"
+        ),
+    )
     args = parser.parse_args()
 
     matches = parse_matches(args.file)
@@ -86,6 +95,7 @@ def main() -> None:
         rng=rng,
         market_path=args.market_path,
         team_home_advantages=team_home,
+        logistic_decay=args.logistic_decay,
         seasons=args.seasons,
     )
 
@@ -96,6 +106,7 @@ def main() -> None:
         rng=rng,
         market_path=args.market_path,
         team_home_advantages=team_home,
+        logistic_decay=args.logistic_decay,
         seasons=args.seasons,
     )
 
@@ -106,6 +117,7 @@ def main() -> None:
         rng=rng,
         market_path=args.market_path,
         team_home_advantages=team_home,
+        logistic_decay=args.logistic_decay,
         seasons=args.seasons,
     )
 

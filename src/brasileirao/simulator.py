@@ -820,6 +820,7 @@ def estimate_spi_strengths(
     market_path: str | Path = "data/Brasileirao2025A.csv",
     smooth: float = 1.0,
     decay_rate: float | None = None,
+    logistic_decay: float | None = None,
     match_weights: pd.Series | None = None,
     *,
     K: float = 0.05,
@@ -834,10 +835,12 @@ def estimate_spi_strengths(
     probabilities when simulating matches.  The function returns five values:
     the strengths dictionary, average goals per game, baseline home advantage,
     intercept and slope.  The ``market_path`` parameter can be used to supply a
-    custom CSV file with team market values.  ``match_weights`` may provide a
-    sequence of weights for the played matches when fitting the logistic
-    regression. ``K`` controls the magnitude of rating updates after each played
-    match.
+    custom CSV file with team market values. ``logistic_decay`` optionally
+    applies exponential weighting to recent fixtures when fitting the logistic
+    regression: a match ``d`` days before the latest carries weight
+    ``exp(-logistic_decay * d)``. ``match_weights`` may directly provide a
+    sequence of weights for the played matches when fitting the regression.
+    ``K`` controls the magnitude of rating updates after each played match.
     """
 
     strengths, avg_goals, home_adv = estimate_market_strengths(
@@ -859,6 +862,11 @@ def estimate_spi_strengths(
 
     diffs: list[float] = []
     outcomes: list[int] = []
+    logistic_weights = None
+    if logistic_decay is not None and not played.empty:
+        latest = played["date"].max()
+        days = (latest - played["date"]).dt.days
+        logistic_weights = np.exp(-logistic_decay * days)
     for _, row in played.iterrows():
         ht = row["home_team"]
         at = row["away_team"]
@@ -878,10 +886,14 @@ def estimate_spi_strengths(
     import statsmodels.api as sm
 
     exog = sm.add_constant(pd.Series(diffs, name="diff"))
-    if match_weights is not None:
-        w = pd.Series(match_weights.loc[played.index], index=exog.index)
+    weights = None
+    if logistic_weights is not None:
+        weights = pd.Series(logistic_weights.values, index=exog.index)
+    elif match_weights is not None:
+        weights = pd.Series(match_weights.loc[played.index], index=exog.index)
+    if weights is not None:
         model = sm.GLM(
-            outcomes, exog, family=sm.families.Binomial(), freq_weights=w
+            outcomes, exog, family=sm.families.Binomial(), freq_weights=weights
         ).fit(disp=False)
     else:
         model = sm.Logit(outcomes, exog).fit(disp=False)
@@ -1172,6 +1184,7 @@ def get_strengths(
     smooth: float = 1.0,
     market_path: str | Path = "data/Brasileirao2025A.csv",
     decay_rate: float | None = None,
+    logistic_decay: float | None = None,
     seasons: list[str] | None = None,
 ) -> tuple[dict[str, dict[str, float]], float, float, float]:
     """Return strength estimates for ``matches`` using ``rating_method``.
@@ -1193,6 +1206,8 @@ def get_strengths(
     ``"initial_spi"`` and points to the CSV file with team market values.
     ``seasons`` may provide a list of past years for recalculating the SPI
     coefficients when ``rating_method`` is ``"spi"`` or ``"initial_spi"``.
+    ``logistic_decay`` weighs recent results more heavily in the SPI logistic
+    regression using ``exp(-logistic_decay * days_since_latest)``.
     """
 
     extra_param = 0.0
@@ -1224,7 +1239,11 @@ def get_strengths(
         ) = estimate_dixon_coles_strengths(matches)
     elif rating_method == "spi":
         strengths, avg_goals, home_adv, intercept, slope = estimate_spi_strengths(
-            matches, market_path=market_path, smooth=smooth, decay_rate=decay_rate
+            matches,
+            market_path=market_path,
+            smooth=smooth,
+            decay_rate=decay_rate,
+            logistic_decay=logistic_decay,
         )
         if seasons is not None:
             from .spi_coeffs import compute_spi_coeffs
@@ -1357,6 +1376,7 @@ def simulate_chances(
     smooth: float = 1.0,
     market_path: str | Path = "data/Brasileirao2025A.csv",
     decay_rate: float | None = None,
+    logistic_decay: float | None = None,
     seasons: list[str] | None = None,
 ) -> dict[str, float]:
     """Simulate remaining fixtures and return title probabilities.
@@ -1393,6 +1413,9 @@ def simulate_chances(
     decay_rate : float | None, optional
         Exponential decay factor applied to older matches when estimating
         strengths. ``None`` or ``0`` gives equal weight to all results.
+    logistic_decay : float | None, optional
+        Weighting factor for the SPI logistic regression. A match ``d`` days
+        before the latest fixture receives weight ``exp(-logistic_decay * d)``.
     seasons : list[str] | None, optional
         Seasons to recompute SPI coefficients for the ``"spi"`` and
         ``"initial_spi"`` rating methods.
@@ -1417,6 +1440,7 @@ def simulate_chances(
         smooth=smooth,
         market_path=market_path,
         decay_rate=decay_rate,
+        logistic_decay=logistic_decay,
         seasons=seasons,
     )
     teams = pd.unique(matches[['home_team', 'away_team']].values.ravel())
@@ -1457,6 +1481,7 @@ def simulate_relegation_chances(
     smooth: float = 1.0,
     market_path: str | Path = "data/Brasileirao2025A.csv",
     decay_rate: float | None = None,
+    logistic_decay: float | None = None,
     seasons: list[str] | None = None,
 ) -> dict[str, float]:
     """Simulate remaining fixtures and return relegation probabilities.
@@ -1474,6 +1499,9 @@ def simulate_relegation_chances(
     decay_rate : float | None, optional
         Exponential decay factor applied to older matches when estimating
         strengths. ``None`` or ``0`` gives equal weight to all results.
+    logistic_decay : float | None, optional
+        Weighting factor for the SPI logistic regression. A match ``d`` days
+        before the latest fixture receives weight ``exp(-logistic_decay * d)``.
     seasons : list[str] | None, optional
         Seasons to recompute SPI coefficients for the ``"spi"`` and
         ``"initial_spi"`` rating methods.
@@ -1499,6 +1527,7 @@ def simulate_relegation_chances(
         smooth=smooth,
         market_path=market_path,
         decay_rate=decay_rate,
+        logistic_decay=logistic_decay,
         seasons=seasons,
     )
 
@@ -1541,6 +1570,7 @@ def simulate_final_table(
     smooth: float = 1.0,
     market_path: str | Path = "data/Brasileirao2025A.csv",
     decay_rate: float | None = None,
+    logistic_decay: float | None = None,
     seasons: list[str] | None = None,
 ) -> pd.DataFrame:
     """Project final league positions and points for each team.
@@ -1556,6 +1586,9 @@ def simulate_final_table(
     decay_rate : float | None, optional
         Exponential decay factor applied to older matches when estimating
         strengths. ``None`` or ``0`` gives equal weight to all results.
+    logistic_decay : float | None, optional
+        Weighting factor for the SPI logistic regression. A match ``d`` days
+        before the latest fixture receives weight ``exp(-logistic_decay * d)``.
     seasons : list[str] | None, optional
         Seasons to recompute SPI coefficients for the ``"spi"`` and
         ``"initial_spi"`` rating methods.
@@ -1581,6 +1614,7 @@ def simulate_final_table(
         smooth=smooth,
         market_path=market_path,
         decay_rate=decay_rate,
+        logistic_decay=logistic_decay,
         seasons=seasons,
     )
 
