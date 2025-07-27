@@ -134,3 +134,18 @@ def test_initial_spi_strengths_with_seasons():
     )
     assert np.isclose(overriden[3], expected[0])
     assert np.isclose(overriden[4], expected[1])
+
+
+def test_initial_spi_strengths_multiple_seasons_changes_output():
+    single, _, _, _, _ = initial_spi_strengths(
+        past_path="data/Brasileirao2024A.txt"
+    )
+    multi, _, _, _, _ = initial_spi_strengths(
+        past_path=["data/Brasileirao2023A.txt", "data/Brasileirao2024A.txt"]
+    )
+
+    assert "Palmeiras" in single
+    assert "Palmeiras" in multi
+    assert not np.isclose(
+        single["Palmeiras"]["attack"], multi["Palmeiras"]["attack"]
+    )

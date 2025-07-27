@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import re
 from pathlib import Path
+from collections.abc import Sequence
 from scipy.optimize import minimize
 from scipy.stats import poisson
 
@@ -889,7 +890,7 @@ def estimate_spi_strengths(
 
 
 def initial_spi_strengths(
-    past_path: str | Path = "data/Brasileirao2024A.txt",
+    past_path: str | Path | Sequence[str | Path] = "data/Brasileirao2024A.txt",
     weight: float = 2 / 3,
     *,
     market_path: str | Path = "data/Brasileirao2024A.csv",
@@ -899,20 +900,87 @@ def initial_spi_strengths(
 ) -> tuple[dict[str, dict[str, float]], float, float, float, float]:
     """Return starting SPI strengths for a new season.
 
-    Ratings are derived from ``past_path`` and then shrunk toward the league
-    average using ``weight`` similar to FiveThirtyEight's approach:
+    ``past_path`` may be a single results file, year string or a sequence of
+    such values. Each season is parsed with :func:`parse_matches` and basic
+    strengths are computed using :func:`_estimate_strengths`. The seasons are
+    blended with an exponential weight ``exp(-decay_rate * age)`` where
+    ``age`` counts seasons back from the most recent. The weighted strengths are
+    finally shrunk toward the league average using ``weight`` similar to
+    FiveThirtyEight's approach:
 
     ``current = previous * weight + league_mean * (1 - weight)``.
 
     When ``seasons`` is provided the logistic regression coefficients are
     recalculated across those years using :func:`compute_spi_coeffs` and replace
-    the values obtained from the past season alone.
+    the values obtained from the past season(s).
     """
 
-    past_matches = parse_matches(past_path)
-    strengths, avg_goals, home_adv, intercept, slope = estimate_spi_strengths(
-        past_matches, market_path=market_path, smooth=smooth, decay_rate=decay_rate
-    )
+    if isinstance(past_path, Sequence) and not isinstance(past_path, (str, Path)):
+        past_paths = list(past_path)
+    else:
+        past_paths = [past_path]
+
+    resolved: list[tuple[Path, int]] = []
+    for p in past_paths:
+        if isinstance(p, Path):
+            text = p.name
+        else:
+            text = str(p)
+        if text.isdigit():
+            year = int(text)
+            path = Path(f"data/Brasileirao{year}A.txt")
+        else:
+            path = Path(text)
+            m = re.search(r"(20\d{2})", path.stem)
+            year = int(m.group(1)) if m else 0
+        resolved.append((path, year))
+
+    teams: set[str] = set()
+    season_data: list[tuple[dict[str, dict[str, float]], float, float, float]] = []
+    years: list[int] = []
+    for path, year in resolved:
+        matches = parse_matches(path)
+        s, avg, ha = _estimate_strengths(matches, smooth=smooth, decay_rate=decay_rate)
+        season_data.append((s, avg, ha, year))
+        teams.update(s.keys())
+        years.append(year)
+
+    if years:
+        max_year = max(years)
+    else:
+        max_year = 0
+
+    weights = [
+        float(np.exp(-decay_rate * (max_year - y))) if decay_rate else 1.0
+        for _, _, _, y in season_data
+    ]
+    tot_w = sum(weights) or 1.0
+
+    strengths: dict[str, dict[str, float]] = {
+        t: {"attack": 0.0, "defense": 0.0} for t in teams
+    }
+    avg_goals = 0.0
+    home_adv = 0.0
+    for (s, avg, ha, _), w in zip(season_data, weights):
+        avg_goals += w * avg
+        home_adv += w * ha
+        for t in teams:
+            cur = s.get(t, {"attack": 1.0, "defense": 1.0})
+            strengths[t]["attack"] += w * cur["attack"]
+            strengths[t]["defense"] += w * cur["defense"]
+
+    avg_goals /= tot_w
+    home_adv /= tot_w
+    for s in strengths.values():
+        s["attack"] /= tot_w
+        s["defense"] /= tot_w
+
+    avg_attack = float(np.mean([s["attack"] for s in strengths.values()]))
+    avg_defense = float(np.mean([s["defense"] for s in strengths.values()]))
+
+    for s in strengths.values():
+        s["attack"] = s["attack"] * weight + avg_attack * (1 - weight)
+        s["defense"] = s["defense"] * weight + avg_defense * (1 - weight)
 
     if seasons is not None:
         from .spi_coeffs import compute_spi_coeffs
@@ -923,13 +991,21 @@ def initial_spi_strengths(
             smooth=smooth,
             decay_rate=decay_rate or 0.0,
         )
-
-    avg_attack = float(np.mean([s["attack"] for s in strengths.values()]))
-    avg_defense = float(np.mean([s["defense"] for s in strengths.values()]))
-
-    for s in strengths.values():
-        s["attack"] = s["attack"] * weight + avg_attack * (1 - weight)
-        s["defense"] = s["defense"] * weight + avg_defense * (1 - weight)
+    else:
+        # derive coefficients from the combined past seasons
+        frames: list[pd.DataFrame] = []
+        for (path, _year), w in zip(resolved, weights):
+            df = parse_matches(path)
+            df["weight"] = w
+            frames.append(df)
+        past_matches = pd.concat(frames, ignore_index=True)
+        _, _, _, intercept, slope = estimate_spi_strengths(
+            past_matches,
+            market_path=market_path,
+            smooth=smooth,
+            decay_rate=decay_rate,
+            match_weights=past_matches.pop("weight"),
+        )
 
     return strengths, avg_goals, home_adv, intercept, slope
 
