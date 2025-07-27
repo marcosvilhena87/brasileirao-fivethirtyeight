@@ -679,7 +679,7 @@ def estimate_spi_strengths(
     matches: pd.DataFrame,
     market_path: str | Path = "data/Brasileirao2025A.csv",
     smooth: float = 1.0,
-) -> tuple[dict[str, dict[str, float]], float, float]:
+) -> tuple[dict[str, dict[str, float]], float, float, float, float]:
     """Estimate strengths with a logistic regression on match outcomes.
 
     The function first computes basic attack and defence factors using
@@ -687,8 +687,10 @@ def estimate_spi_strengths(
     for each played match and fits a logistic regression of the home-win
     indicator on that value.  The fitted intercept and slope are returned and
     later used to transform expected goal differences into win/draw/loss
-    probabilities when simulating matches.  The ``market_path`` parameter can be
-    used to supply a custom CSV file with team market values.
+    probabilities when simulating matches.  The function returns five values:
+    the strengths dictionary, average goals per game, baseline home advantage,
+    intercept and slope.  The ``market_path`` parameter can be used to supply a
+    custom CSV file with team market values.
     """
 
     strengths, avg_goals, home_adv = estimate_market_strengths(
