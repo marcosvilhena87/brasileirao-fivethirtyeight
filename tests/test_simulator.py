@@ -11,6 +11,7 @@ from brasileirao import (
     SPI_DEFAULT_INTERCEPT,
     SPI_DEFAULT_SLOPE,
 )
+from brasileirao.simulator import update_spi_ratings, estimate_market_strengths
 
 
 def test_parse_matches():
@@ -61,3 +62,33 @@ def test_weighted_strengths_change():
         not np.isclose(base[t]["attack"], weighted[t]["attack"]) for t in base
     )
     assert diff
+
+
+def test_update_spi_ratings_changes_values():
+    strengths = {
+        "A": {"attack": 1.0, "defense": 1.0},
+        "B": {"attack": 1.0, "defense": 1.0},
+    }
+    mu_h, mu_a = update_spi_ratings(
+        strengths,
+        "A",
+        "B",
+        2,
+        1,
+        avg_goals=2.5,
+        home_adv=1.0,
+    )
+    assert mu_h > 0 and mu_a > 0
+    assert strengths["A"]["attack"] != 1.0 or strengths["B"]["defense"] != 1.0
+
+
+def test_spi_sequential_updates_differ_from_static():
+    df = parse_matches("data/Brasileirao2025A.txt")
+    dynamic, _, _, _, _ = estimate_spi_strengths(df)
+    static, _, _ = estimate_market_strengths(df)
+
+    assert dynamic.keys() == static.keys()
+    changed = any(
+        not np.isclose(dynamic[t]["attack"], static[t]["attack"]) for t in dynamic
+    )
+    assert changed
