@@ -11,8 +11,8 @@ pip install -r requirements.txt
 python main.py --simulations 1000 --rating poisson
 ```
 
-The `--rating` option accepts `ratio` (default), `historic_ratio`, `poisson`,
-`neg_binom`, `skellam`, `dixon_coles`, `elo`, `spi`, `initial_spi`, `initial_ratio`, `initial_points`, `initial_points_market`, or `leader_history` to choose how team
+The `--rating` option accepts `spi` (default), `ratio`, `historic_ratio`, `poisson`,
+`neg_binom`, `skellam`, `dixon_coles`, `elo`, `initial_spi`, `initial_ratio`, `initial_points`, `initial_points_market`, or `leader_history` to choose how team
 strengths are estimated. The `skellam` method fits a regression to goal
 differences. The `historic_ratio` method
 mixes results from the 2024 season with a lower weight. The `elo` method
