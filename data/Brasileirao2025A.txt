@@ -152,8 +152,8 @@ TeamListedFirst: home
 26/07/2025	Sport		2-2	Santos
 26/07/2025	Botafogo	1-1	Corinthians
 26/07/2025	Palmeiras	1-0	Gremio
-27/07/2025	Cruzeiro		Ceara
-27/07/2025	Sao Paulo		Fluminense
+27/07/2025	Cruzeiro	1-2	Ceara
+27/07/2025	Sao Paulo	3-1	Fluminense
 27/07/2025	Bahia			Juventude
 27/07/2025	Internacional		Vasco
 27/07/2025	Flamengo		Atletico-MG
