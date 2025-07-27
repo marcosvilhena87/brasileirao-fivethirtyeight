@@ -2,7 +2,12 @@ import os, sys
 import numpy as np
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
 import pandas as pd
-from brasileirao import parse_matches, league_table, simulate_chances
+from brasileirao import (
+    parse_matches,
+    league_table,
+    simulate_chances,
+    estimate_spi_strengths,
+)
 
 
 def test_parse_matches():
@@ -24,3 +29,12 @@ def test_simulate_chances_spi_repeatable():
     rng = np.random.default_rng(123)
     second = simulate_chances(df, iterations=5, rng=rng)
     assert first == second
+
+
+def test_estimate_spi_strengths_returns_five_values():
+    df = parse_matches('data/Brasileirao2025A.txt')
+    result = estimate_spi_strengths(df)
+    assert isinstance(result, tuple)
+    assert len(result) == 5
+    assert isinstance(result[-1], float)
+    assert isinstance(result[-2], float)
