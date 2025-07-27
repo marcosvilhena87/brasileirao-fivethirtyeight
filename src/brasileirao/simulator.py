@@ -821,6 +821,7 @@ def estimate_spi_strengths(
     smooth: float = 1.0,
     decay_rate: float | None = None,
     logistic_decay: float | None = None,
+    seasons: list[str] | None = None,
     match_weights: pd.Series | None = None,
     *,
     K: float = 0.05,
@@ -840,7 +841,10 @@ def estimate_spi_strengths(
     regression: a match ``d`` days before the latest carries weight
     ``exp(-logistic_decay * d)``. ``match_weights`` may directly provide a
     sequence of weights for the played matches when fitting the regression.
-    ``K`` controls the magnitude of rating updates after each played match.
+    ``seasons`` can specify past seasons for the logistic coefficients which are
+    then computed via :func:`compute_spi_coeffs` instead of relying only on the
+    matches passed to this function. ``K`` controls the magnitude of rating
+    updates after each played match.
     """
 
     strengths, avg_goals, home_adv = estimate_market_strengths(
@@ -848,7 +852,17 @@ def estimate_spi_strengths(
     )
 
     played = matches.dropna(subset=["home_score", "away_score"]).sort_values("date")
-    if played.empty:
+
+    if seasons is not None:
+        from .spi_coeffs import compute_spi_coeffs
+
+        intercept, slope = compute_spi_coeffs(
+            seasons=seasons,
+            market_path=market_path,
+            smooth=smooth,
+            decay_rate=decay_rate or 0.0,
+        )
+    elif played.empty:
         from .spi_coeffs import compute_spi_coeffs
 
         intercept, slope = compute_spi_coeffs()
@@ -862,11 +876,7 @@ def estimate_spi_strengths(
 
     diffs: list[float] = []
     outcomes: list[int] = []
-    logistic_weights = None
-    if logistic_decay is not None and not played.empty:
-        latest = played["date"].max()
-        days = (latest - played["date"]).dt.days
-        logistic_weights = np.exp(-logistic_decay * days)
+
     for _, row in played.iterrows():
         ht = row["home_team"]
         at = row["away_team"]
@@ -880,26 +890,36 @@ def estimate_spi_strengths(
             home_adv,
             K=K,
         )
-        diffs.append(mu_home - mu_away)
-        outcomes.append(int(row["home_score"] > row["away_score"]))
+        if seasons is None:
+            diffs.append(mu_home - mu_away)
+            outcomes.append(int(row["home_score"] > row["away_score"]))
 
-    import statsmodels.api as sm
+    if seasons is None:
+        logistic_weights = None
+        if logistic_decay is not None and not played.empty:
+            latest = played["date"].max()
+            days = (latest - played["date"]).dt.days
+            logistic_weights = np.exp(-logistic_decay * days)
 
-    exog = sm.add_constant(pd.Series(diffs, name="diff"))
-    weights = None
-    if logistic_weights is not None:
-        weights = pd.Series(logistic_weights.values, index=exog.index)
-    elif match_weights is not None:
-        weights = pd.Series(match_weights.loc[played.index], index=exog.index)
-    if weights is not None:
-        model = sm.GLM(
-            outcomes, exog, family=sm.families.Binomial(), freq_weights=weights
-        ).fit(disp=False)
-    else:
-        model = sm.Logit(outcomes, exog).fit(disp=False)
+        import statsmodels.api as sm
 
-    intercept = float(model.params["const"])
-    slope = float(model.params["diff"])
+        exog = sm.add_constant(pd.Series(diffs, name="diff"))
+        weights = None
+        if logistic_weights is not None:
+            weights = pd.Series(logistic_weights.values, index=exog.index)
+        elif match_weights is not None:
+            weights = pd.Series(match_weights.loc[played.index], index=exog.index)
+        if weights is not None:
+            model = sm.GLM(
+                outcomes, exog, family=sm.families.Binomial(), freq_weights=weights
+            ).fit(disp=False)
+        else:
+            model = sm.Logit(outcomes, exog).fit(disp=False)
+
+        intercept = float(model.params["const"])
+        slope = float(model.params["diff"])
+
+    # When seasons is provided the intercept and slope were computed above
 
     return strengths, avg_goals, home_adv, intercept, slope
 
@@ -1244,16 +1264,8 @@ def get_strengths(
             smooth=smooth,
             decay_rate=decay_rate,
             logistic_decay=logistic_decay,
+            seasons=seasons,
         )
-        if seasons is not None:
-            from .spi_coeffs import compute_spi_coeffs
-
-            intercept, slope = compute_spi_coeffs(
-                seasons=seasons,
-                market_path=market_path,
-                smooth=smooth,
-                decay_rate=decay_rate or 0.0,
-            )
         extra_param = (intercept, slope)
     elif rating_method == "initial_spi":
         (

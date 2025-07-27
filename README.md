@@ -55,6 +55,15 @@ specified years.  For instance::
 
     initial_spi_strengths(seasons=["2023", "2024"])
 
+You can calculate the SPI intercept and slope directly with ``compute_spi_coeffs``::
+
+    from brasileirao.spi_coeffs import compute_spi_coeffs
+    intercept, slope = compute_spi_coeffs(seasons=["2023", "2024"])
+
+The coefficients can then be applied when rating a season using ``estimate_spi_strengths``::
+
+    estimate_spi_strengths(matches, seasons=["2023", "2024"])
+
 The ``compute_spi_coeffs`` helper scans the ``data/`` folder for past seasons
 and recalculates the logistic regression intercept and slope.  Seasons can be
 specified via the ``BRASILEIRAO_SEASONS`` environment variable or the
