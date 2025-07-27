@@ -28,6 +28,14 @@ The helper ``initial_spi_strengths`` can be used at the start of a season to
 shrink each team's previous rating towards the league average following
 ``current = previous × weight + mean × (1 − weight)``.
 
+To recompute these coefficients yourself run:
+
+```bash
+PYTHONPATH=src python -m brasileirao.spi_coeffs
+```
+This command loads the 2023 and 2024 fixtures and prints the fitted
+intercept and slope.
+
 The script outputs the estimated chance of winning the title for each team. It
 then prints the probability of each side finishing in the bottom four and being
 relegated. It also estimates the average final position and points of every club.
