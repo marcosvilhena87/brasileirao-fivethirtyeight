@@ -562,3 +562,41 @@ def test_initial_spi_strengths_weighting():
     for t in base:
         expect = base[t]["attack"] * 0.5 + avg_attack * 0.5
         assert np.isclose(weighted[t]["attack"], expect)
+
+
+def test_simulate_chances_initial_spi_seed_repeatability():
+    df = parse_matches("data/Brasileirao2024A.txt")
+    rng = np.random.default_rng(404)
+    first = simulate_chances(
+        df,
+        iterations=5,
+        rating_method="initial_spi",
+        rng=rng,
+    )
+    rng = np.random.default_rng(404)
+    second = simulate_chances(
+        df,
+        iterations=5,
+        rating_method="initial_spi",
+        rng=rng,
+    )
+    assert first == second
+    assert abs(sum(first.values()) - 1.0) < 1e-6
+
+
+def test_initial_spi_differs_from_spi_without_matches():
+    data = [
+        {
+            "date": "2025-01-01",
+            "home_team": "Internacional",
+            "away_team": "Bahia",
+            "home_score": np.nan,
+            "away_score": np.nan,
+        }
+    ]
+    df = pd.DataFrame(data)
+    rng = np.random.default_rng(7)
+    spi_res = simulate_chances(df, iterations=20, rating_method="spi", rng=rng)
+    rng = np.random.default_rng(7)
+    init_res = simulate_chances(df, iterations=20, rating_method="initial_spi", rng=rng)
+    assert spi_res != init_res

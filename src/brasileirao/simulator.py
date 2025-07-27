@@ -812,8 +812,8 @@ def get_strengths(
     otherwise
         ``0.0``.
 
-    ``market_path`` is only used when ``rating_method`` is ``"spi"`` and points
-    to the CSV file with team market values.
+    ``market_path`` is only used when ``rating_method`` is ``"spi"`` or
+    ``"initial_spi"`` and points to the CSV file with team market values.
     """
 
     extra_param = 0.0
@@ -835,6 +835,15 @@ def get_strengths(
         strengths, avg_goals, home_adv, intercept, slope = estimate_spi_strengths(
             matches, market_path=market_path, smooth=smooth
         )
+        extra_param = (intercept, slope)
+    elif rating_method == "initial_spi":
+        (
+            strengths,
+            avg_goals,
+            home_adv,
+            intercept,
+            slope,
+        ) = initial_spi_strengths(market_path=market_path, smooth=smooth)
         extra_param = (intercept, slope)
     elif rating_method == "leader_history":
         paths = leader_history_paths or ["data/Brasileirao2024A.txt"]
@@ -881,7 +890,7 @@ def _simulate_table(
             p_away = r / (r + mu_away)
             hs = rng.negative_binomial(r, p_home)
             as_ = rng.negative_binomial(r, p_away)
-        elif rating_method == "spi" and isinstance(extra_param, tuple):
+        elif rating_method in {"spi", "initial_spi"} and isinstance(extra_param, tuple):
             probs = _spi_probs(mu_home - mu_away, extra_param)
             outcome = rng.choice(["H", "D", "A"], p=probs)
             for _ in range(25):
@@ -956,7 +965,8 @@ def simulate_chances(
         Smoothing constant added to goals scored and conceded when estimating
         team strengths under the ``"ratio"`` methods.
     market_path : str | Path, default "data/Brasileirao2025A.csv"
-        CSV file with team market values used by the ``"spi"`` rating method.
+        CSV file with team market values used by the ``"spi"`` or
+        ``"initial_spi"`` rating method.
     """
     if rng is None:
         rng = np.random.default_rng()
@@ -1026,7 +1036,8 @@ def simulate_relegation_chances(
     defence ratings under the ``"ratio"`` methods. ``home_field_advantage`` only
     affects the Elo method.
     market_path : str | Path, default "data/Brasileirao2025A.csv"
-        CSV file with team market values used by the ``"spi"`` rating method.
+        CSV file with team market values used by the ``"spi"`` or
+        ``"initial_spi"`` rating method.
     """
 
     if rng is None:
@@ -1097,7 +1108,8 @@ def simulate_final_table(
     ``smooth`` has the same meaning as in :func:`simulate_chances`.
     ``home_field_advantage`` only affects the Elo method.
     market_path : str | Path, default "data/Brasileirao2025A.csv"
-        CSV file with team market values used by the ``"spi"`` rating method.
+        CSV file with team market values used by the ``"spi"`` or
+        ``"initial_spi"`` rating method.
     """
 
     if rng is None:
@@ -1182,7 +1194,8 @@ def summary_table(
     ``home_field_advantage`` is forwarded to the Elo-based rating routine and
     has no effect for other methods.
     market_path : str | Path, default "data/Brasileirao2025A.csv"
-        CSV file with team market values used by the ``"spi"`` rating method.
+        CSV file with team market values used by the ``"spi"`` or
+        ``"initial_spi"`` rating method.
     """
 
     chances = simulate_chances(

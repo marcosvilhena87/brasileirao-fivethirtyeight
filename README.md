@@ -12,7 +12,7 @@ python main.py --simulations 1000 --rating poisson
 ```
 
 The `--rating` option accepts `ratio` (default), `historic_ratio`, `poisson`,
-`neg_binom`, `skellam`, `dixon_coles`, `elo`, `spi`, or `leader_history` to choose how team
+`neg_binom`, `skellam`, `dixon_coles`, `elo`, `spi`, `initial_spi`, or `leader_history` to choose how team
 strengths are estimated. The `skellam` method fits a regression to goal
 differences. The `historic_ratio` method
 mixes results from the 2024 season with a lower weight. The `elo` method
@@ -42,7 +42,9 @@ simulation. When no matches have been played the function returns default
 coefficients of ``-0.180149`` and ``0.228628`` based on the 2023–2024 seasons.
 The helper ``initial_spi_strengths`` can be used at the start of a season to
 shrink each team's previous rating towards the league average following
-``current = previous × weight + mean × (1 − weight)``.
+``current = previous × weight + mean × (1 − weight)``. Selecting ``initial_spi``
+for ``--rating`` applies this method so early-season projections reflect prior
+form with league-average shrinkage.
 
 The script outputs the estimated chance of winning the title for each team. It then prints the probability of each side finishing in the bottom four and being relegated.
 It also estimates the average final position and points of every club.
