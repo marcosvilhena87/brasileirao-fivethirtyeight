@@ -1136,6 +1136,9 @@ def simulate_final_table(
     teams = pd.unique(matches[["home_team", "away_team"]].values.ravel())
     pos_totals = {t: 0.0 for t in teams}
     points_totals = {t: 0.0 for t in teams}
+    wins_totals = {t: 0.0 for t in teams}
+    gd_totals = {t: 0.0 for t in teams}
+    gf_totals = {t: 0.0 for t in teams}
 
     played_df = matches.dropna(subset=["home_score", "away_score"])
     remaining = matches[matches["home_score"].isna() | matches["away_score"].isna()]
@@ -1153,22 +1156,33 @@ def simulate_final_table(
             rng,
         )
         for idx, row in table.iterrows():
-            pos_totals[row["team"]] += idx + 1
-            points_totals[row["team"]] += row["points"]
+            team = row["team"]
+            pos_totals[team] += idx + 1
+            points_totals[team] += row["points"]
+            wins_totals[team] += row["wins"]
+            gd_totals[team] += row["gd"]
+            gf_totals[team] += row["gf"]
 
     results = []
     for team in teams:
         results.append(
             {
                 "team": team,
-                "position": pos_totals[team] / iterations,
+                "avg_position": pos_totals[team] / iterations,
                 "points": points_totals[team] / iterations,
+                "wins": wins_totals[team] / iterations,
+                "gd": gd_totals[team] / iterations,
+                "gf": gf_totals[team] / iterations,
             }
         )
 
     df = pd.DataFrame(results)
-    df = df.sort_values("position").reset_index(drop=True)
-    return df
+    df = df.sort_values(
+        ["points", "wins", "gd", "gf", "team"],
+        ascending=[False, False, False, False, True],
+    ).reset_index(drop=True)
+    df["position"] = range(1, len(df) + 1)
+    return df[["team", "position", "points", "avg_position"]]
 
 
 def summary_table(
@@ -1239,7 +1253,6 @@ def summary_table(
     )
 
     table = table.sort_values("position").reset_index(drop=True)
-    table["position"] = range(1, len(table) + 1)
     table["points"] = table["points"].round().astype(int)
     table["title"] = table["team"].map(chances)
     table["relegation"] = table["team"].map(relegation)
