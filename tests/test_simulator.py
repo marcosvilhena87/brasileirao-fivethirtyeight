@@ -1,6 +1,7 @@
 import os
 import sys
 import numpy as np
+import pandas as pd
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
 from brasileirao import (
     parse_matches,
@@ -119,6 +120,32 @@ def test_spi_coeffs_decay_changes_values():
         np.isclose(no_decay[0], with_decay[0])
         and np.isclose(no_decay[1], with_decay[1])
     )
+
+
+def test_compute_spi_coeffs_matches_manual_estimate():
+    seasons = ["2023", "2024"]
+    dfs = []
+    weights = []
+    max_year = max(int(s) for s in seasons)
+    for season in seasons:
+        df = parse_matches(f"data/Brasileirao{season}A.txt")
+        dfs.append(df)
+        age = max_year - int(season)
+        w = np.exp(-0.5 * age)
+        weights.append(pd.Series(w, index=df.index))
+    combined = pd.concat(dfs, ignore_index=True)
+    weight_series = pd.concat(weights, ignore_index=True)
+    expected = estimate_spi_strengths(
+        combined,
+        market_path=f"data/Brasileirao{max_year}A.csv",
+        match_weights=weight_series,
+        smooth=1.0,
+    )
+    intercept_expected = expected[3]
+    slope_expected = expected[4]
+    intercept, slope = compute_spi_coeffs(seasons=seasons, decay_rate=0.5)
+    assert np.isclose(intercept, intercept_expected)
+    assert np.isclose(slope, slope_expected)
 
 
 def test_initial_spi_strengths_with_seasons():

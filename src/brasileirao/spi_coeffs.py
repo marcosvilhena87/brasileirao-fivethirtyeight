@@ -4,6 +4,7 @@ import argparse
 import os
 import pathlib
 import numpy as np
+import pandas as pd
 from collections.abc import Mapping
 
 from .simulator import (
@@ -38,13 +39,15 @@ def compute_spi_coeffs(
 
     ``seasons`` may be provided as a list of years.  If omitted the value of the
     ``BRASILEIRAO_SEASONS`` environment variable is used.  When that is also
-    unset all seasons found in ``data_dir`` are processed.  ``decay_rate``
+    unset all seasons found in ``data_dir`` are processed. ``decay_rate``
     applies an exponential weight ``exp(-decay_rate * age)`` to each season
-    where ``age`` counts seasons back from the most recent.  Team market values
-    are loaded from ``data/Brasileirao{season}A.csv`` by default.  ``market_path``
+    where ``age`` counts seasons back from the most recent. Team market values
+    are loaded from ``data/Brasileirao{season}A.csv`` by default. ``market_path``
     may be a custom pattern containing ``{season}`` or a mapping from season to
-    CSV path.  If no match files are available the default SPI coefficients are
-    returned.
+    CSV path. All matches from the selected seasons are merged into a single
+    DataFrame and passed once to :func:`estimate_spi_strengths` using the
+    computed weights. If no match files are available the default SPI
+    coefficients are returned.
     """
 
     if seasons is None:
@@ -63,9 +66,8 @@ def compute_spi_coeffs(
         market_map = {}
         pattern = str(market_path)
 
-    intercepts: list[float] = []
-    slopes: list[float] = []
-    weights: list[float] = []
+    dfs: list[pd.DataFrame] = []
+    match_weights: list[pd.Series] = []
 
     if seasons:
         max_year = max(int(s) for s in seasons)
@@ -76,23 +78,27 @@ def compute_spi_coeffs(
         txt_path = pathlib.Path(data_dir) / f"Brasileirao{season}A.txt"
         if not txt_path.exists():
             continue
-        csv_path = market_map.get(season, pattern.format(season=season))
         df = parse_matches(txt_path)
-        _, _, _, intercept, slope = estimate_spi_strengths(
-            df, market_path=csv_path, smooth=smooth
-        )
         age = max_year - int(season)
         w = float(np.exp(-decay_rate * age)) if decay_rate else 1.0
-        intercepts.append(intercept)
-        slopes.append(slope)
-        weights.append(w)
+        dfs.append(df)
+        match_weights.append(pd.Series(w, index=df.index))
 
-    if not weights:
+    if not dfs:
         return SPI_DEFAULT_INTERCEPT, SPI_DEFAULT_SLOPE
 
-    tot = float(np.sum(weights)) or 1.0
-    intercept = float(np.sum(np.array(intercepts) * np.array(weights)) / tot)
-    slope = float(np.sum(np.array(slopes) * np.array(weights)) / tot)
+    all_matches = pd.concat(dfs, ignore_index=True)
+    weights = pd.concat(match_weights, ignore_index=True)
+
+    target_season = str(max_year) if seasons else ""
+    csv_path = market_map.get(target_season, pattern.format(season=target_season))
+
+    _, _, _, intercept, slope = estimate_spi_strengths(
+        all_matches,
+        market_path=csv_path,
+        smooth=smooth,
+        match_weights=weights,
+    )
 
     return intercept, slope
 
