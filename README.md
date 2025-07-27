@@ -4,11 +4,11 @@ This project provides a simple simulator for the 2025 Brasileirão Série A seas
 
 ## Usage
 
-Install dependencies from `requirements.txt` and run the simulator:
+Install the project in editable mode and run the simulator:
 
 ```bash
-pip install -r requirements.txt
-python main.py --simulations 1000
+pip install -e .
+brasileirao-sim --simulations 1000
 ```
 
 By default the command line uses the `spi` rating method. The logistic
@@ -92,7 +92,7 @@ simulation utilities.
 
 - `data/` – raw fixtures and results.
 - `src/brasileirao/simulator.py` – parsing, table calculation and simulation routines.
-- `main.py` – command-line interface to run the simulation.
+- `brasileirao/cli.py` – command-line interface exposed as `brasileirao-sim`.
 - `tests/` – basic unit tests.
 
 The main functions can be imported directly from the package:

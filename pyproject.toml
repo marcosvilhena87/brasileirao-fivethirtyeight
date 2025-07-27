@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "brasileirao"
+version = "0.1.0"
+description = "Brasileirao Serie A simulator using FiveThirtyEight-style SPI ratings"
+authors = [{name = "Brasileirao Simulator Developers"}]
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.8"
+dependencies = [
+    "numpy",
+    "pandas",
+    "scipy",
+    "statsmodels",
+    "pytest",
+]
+
+[project.scripts]
+brasileirao-sim = "brasileirao.cli:main"
