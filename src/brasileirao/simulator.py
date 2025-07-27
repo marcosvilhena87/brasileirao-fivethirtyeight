@@ -249,6 +249,18 @@ def _estimate_strengths(matches: pd.DataFrame, smooth: float = 1.0):
 def _estimate_team_home_advantages(matches: pd.DataFrame) -> dict[str, float]:
     """Return relative home advantage factors for each team."""
     played = matches.dropna(subset=["home_score", "away_score"])
+
+    if played.empty:
+        return _estimate_strengths(matches)
+
+    if played.empty:
+        return _estimate_strengths(matches)
+
+    if played.empty:
+        return _estimate_strengths(matches)
+
+    if played.empty:
+        return _estimate_strengths(matches)
     teams = pd.unique(matches[["home_team", "away_team"]].values.ravel())
 
     total_home = played["home_score"].sum()
@@ -379,6 +391,9 @@ def estimate_poisson_strengths(matches: pd.DataFrame):
 
     played = matches.dropna(subset=["home_score", "away_score"])
 
+    if played.empty:
+        return _estimate_strengths(matches)
+
     rows: list[dict] = []
     for _, row in played.iterrows():
         rows.append(
@@ -432,6 +447,11 @@ def estimate_negative_binomial_strengths(matches: pd.DataFrame):
     import statsmodels.formula.api as smf
 
     played = matches.dropna(subset=["home_score", "away_score"])
+
+    if played.empty:
+        strengths, avg_goals, home_adv = _estimate_strengths(matches)
+        dispersion = _estimate_dispersion(matches)
+        return strengths, avg_goals, home_adv, dispersion
 
     rows: list[dict] = []
     for _, row in played.iterrows():
@@ -487,6 +507,9 @@ def estimate_skellam_strengths(matches: pd.DataFrame):
     import statsmodels.formula.api as smf
 
     played = matches.dropna(subset=["home_score", "away_score"])
+
+    if played.empty:
+        return _estimate_strengths(matches)
 
     rows: list[dict] = []
     for _, row in played.iterrows():
@@ -746,6 +769,31 @@ def initial_spi_strengths(
     return strengths, avg_goals, home_adv, intercept, slope
 
 
+def initial_ratio_strengths(
+    past_path: str | Path = "data/Brasileirao2024A.txt",
+    weight: float = 2 / 3,
+    *,
+    smooth: float = 1.0,
+) -> tuple[dict[str, dict[str, float]], float, float]:
+    """Return starting ratio strengths for a new season.
+
+    Ratings are derived from ``past_path`` and shrunk toward the league mean
+    using ``weight`` similar to :func:`initial_spi_strengths`.
+    """
+
+    past_matches = parse_matches(past_path)
+    strengths, avg_goals, home_adv = _estimate_strengths(past_matches, smooth=smooth)
+
+    avg_attack = float(np.mean([s["attack"] for s in strengths.values()]))
+    avg_defense = float(np.mean([s["defense"] for s in strengths.values()]))
+
+    for s in strengths.values():
+        s["attack"] = s["attack"] * weight + avg_attack * (1 - weight)
+        s["defense"] = s["defense"] * weight + avg_defense * (1 - weight)
+
+    return strengths, avg_goals, home_adv
+
+
 def _dixon_coles_sample(
     lam: float, mu: float, rho: float, rng: np.random.Generator, max_goals: int = 6
 ) -> tuple[int, int]:
@@ -845,6 +893,8 @@ def get_strengths(
             slope,
         ) = initial_spi_strengths(market_path=market_path, smooth=smooth)
         extra_param = (intercept, slope)
+    elif rating_method == "initial_ratio":
+        strengths, avg_goals, home_adv = initial_ratio_strengths(smooth=smooth)
     elif rating_method == "leader_history":
         paths = leader_history_paths or ["data/Brasileirao2024A.txt"]
         strengths, avg_goals, home_adv = estimate_leader_history_strengths(
