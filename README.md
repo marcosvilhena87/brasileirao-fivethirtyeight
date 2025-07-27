@@ -28,6 +28,13 @@ The helper ``initial_spi_strengths`` can be used at the start of a season to
 shrink each team's previous rating towards the league average following
 ``current = previous × weight + mean × (1 − weight)``.
 
+``past_path`` may also be a sequence of season files or years.  Each season is
+weighted by ``exp(-decay_rate * age)`` where ``age`` counts seasons back from
+the most recent before being combined and shrunk to the league mean.  For
+example::
+
+    initial_spi_strengths(past_path=["2023", "2024"], decay_rate=0.5)
+
 Passing a list of ``seasons`` to ``initial_spi_strengths`` replaces the logistic
 regression coefficients with those produced by ``compute_spi_coeffs`` across the
 specified years.  For instance::
