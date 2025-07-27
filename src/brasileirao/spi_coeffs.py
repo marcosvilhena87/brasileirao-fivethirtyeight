@@ -4,7 +4,7 @@ import argparse
 import os
 import pathlib
 import numpy as np
-import pandas as pd
+from collections.abc import Mapping
 
 from .simulator import (
     parse_matches,
@@ -28,7 +28,9 @@ def compute_spi_coeffs(
     seasons: list[str] | None = None,
     *,
     data_dir: str | pathlib.Path = "data",
-    market_path: str | pathlib.Path = "data/Brasileirao2025A.csv",
+    market_path: str | pathlib.Path | dict[str, str | pathlib.Path] = (
+        "data/Brasileirao{season}A.csv"
+    ),
     smooth: float = 1.0,
     decay_rate: float = 0.0,
 ) -> tuple[float, float]:
@@ -38,8 +40,11 @@ def compute_spi_coeffs(
     ``BRASILEIRAO_SEASONS`` environment variable is used.  When that is also
     unset all seasons found in ``data_dir`` are processed.  ``decay_rate``
     applies an exponential weight ``exp(-decay_rate * age)`` to each season
-    where ``age`` counts seasons back from the most recent.  If no match files
-    are available the default SPI coefficients are returned.
+    where ``age`` counts seasons back from the most recent.  Team market values
+    are loaded from ``data/Brasileirao{season}A.csv`` by default.  ``market_path``
+    may be a custom pattern containing ``{season}`` or a mapping from season to
+    CSV path.  If no match files are available the default SPI coefficients are
+    returned.
     """
 
     if seasons is None:
@@ -51,29 +56,43 @@ def compute_spi_coeffs(
     if not seasons:
         seasons = available_seasons(data_dir)
 
-    frames: list[pd.DataFrame] = []
+    if isinstance(market_path, Mapping):
+        market_map = {str(k): str(v) for k, v in market_path.items()}
+        pattern = "data/Brasileirao{season}A.csv"
+    else:
+        market_map = {}
+        pattern = str(market_path)
+
+    intercepts: list[float] = []
+    slopes: list[float] = []
+    weights: list[float] = []
+
     if seasons:
         max_year = max(int(s) for s in seasons)
     else:
         max_year = 0
-    for season in seasons:
-        path = pathlib.Path(data_dir) / f"Brasileirao{season}A.txt"
-        if path.exists():
-            age = max_year - int(season)
-            weight = float(np.exp(-decay_rate * age)) if decay_rate else 1.0
-            df = parse_matches(path)
-            df["weight"] = weight
-            frames.append(df)
 
-    if not frames:
+    for season in seasons:
+        txt_path = pathlib.Path(data_dir) / f"Brasileirao{season}A.txt"
+        if not txt_path.exists():
+            continue
+        csv_path = market_map.get(season, pattern.format(season=season))
+        df = parse_matches(txt_path)
+        _, _, _, intercept, slope = estimate_spi_strengths(
+            df, market_path=csv_path, smooth=smooth
+        )
+        age = max_year - int(season)
+        w = float(np.exp(-decay_rate * age)) if decay_rate else 1.0
+        intercepts.append(intercept)
+        slopes.append(slope)
+        weights.append(w)
+
+    if not weights:
         return SPI_DEFAULT_INTERCEPT, SPI_DEFAULT_SLOPE
 
-    matches = pd.concat(frames, ignore_index=True)
-    weights = matches.pop("weight") if "weight" in matches else None
-
-    _, _, _, intercept, slope = estimate_spi_strengths(
-        matches, market_path=market_path, smooth=smooth, match_weights=weights
-    )
+    tot = float(np.sum(weights)) or 1.0
+    intercept = float(np.sum(np.array(intercepts) * np.array(weights)) / tot)
+    slope = float(np.sum(np.array(slopes) * np.array(weights)) / tot)
 
     return intercept, slope
 
@@ -84,8 +103,12 @@ def main() -> None:
     )
     parser.add_argument(
         "--market-path",
-        default="data/Brasileirao2025A.csv",
-        help="CSV with team market values",
+        action="append",
+        dest="market_paths",
+        help=(
+            "Pattern with {season} or YEAR=CSV pair. "
+            "Defaults to data/Brasileirao{season}A.csv"
+        ),
     )
     parser.add_argument(
         "--seasons",
@@ -106,9 +129,22 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    if not args.market_paths:
+        market = "data/Brasileirao{season}A.csv"
+    elif len(args.market_paths) == 1 and "=" not in args.market_paths[0]:
+        market = args.market_paths[0]
+    else:
+        mapping: dict[str, str] = {}
+        for spec in args.market_paths:
+            if "=" not in spec:
+                parser.error("Mapping entries must use SEASON=PATH syntax")
+            season, path = spec.split("=", 1)
+            mapping[season] = path
+        market = mapping
+
     intercept, slope = compute_spi_coeffs(
         seasons=args.seasons,
-        market_path=args.market_path,
+        market_path=market,
         decay_rate=args.decay_rate,
     )
 
