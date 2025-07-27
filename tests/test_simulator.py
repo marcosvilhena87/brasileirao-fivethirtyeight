@@ -108,3 +108,13 @@ def test_team_home_advantage_changes_results():
     base_pts = base.loc[base.team == "Palmeiras", "points"].iloc[0]
     adv_pts = advantaged.loc[advantaged.team == "Palmeiras", "points"].iloc[0]
     assert base_pts != adv_pts
+
+
+def test_spi_coeffs_decay_changes_values():
+    seasons = ["2023", "2024"]
+    no_decay = compute_spi_coeffs(seasons=seasons, decay_rate=0.0)
+    with_decay = compute_spi_coeffs(seasons=seasons, decay_rate=0.5)
+    assert not (
+        np.isclose(no_decay[0], with_decay[0])
+        and np.isclose(no_decay[1], with_decay[1])
+    )
