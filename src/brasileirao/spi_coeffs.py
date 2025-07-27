@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import argparse
 import os
-from pathlib import Path
+import pathlib
 import pandas as pd
 
 from .simulator import (
@@ -13,10 +13,10 @@ from .simulator import (
 )
 
 
-def available_seasons(data_dir: str | Path = "data") -> list[str]:
+def available_seasons(data_dir: str | pathlib.Path = "data") -> list[str]:
     """Return a sorted list of seasons found in ``data_dir``."""
     seasons: list[str] = []
-    for txt in Path(data_dir).glob("Brasileirao????A.txt"):
+    for txt in pathlib.Path(data_dir).glob("Brasileirao????A.txt"):
         year = txt.stem[10:14]
         seasons.append(year)
     seasons.sort()
@@ -26,8 +26,8 @@ def available_seasons(data_dir: str | Path = "data") -> list[str]:
 def compute_spi_coeffs(
     seasons: list[str] | None = None,
     *,
-    data_dir: str | Path = "data",
-    market_path: str | Path = "data/Brasileirao2025A.csv",
+    data_dir: str | pathlib.Path = "data",
+    market_path: str | pathlib.Path = "data/Brasileirao2025A.csv",
     smooth: float = 1.0,
 ) -> tuple[float, float]:
     """Return fitted intercept and slope from historical seasons.
@@ -47,7 +47,7 @@ def compute_spi_coeffs(
 
     frames: list[pd.DataFrame] = []
     for season in seasons:
-        path = Path(data_dir) / f"Brasileirao{season}A.txt"
+        path = pathlib.Path(data_dir) / f"Brasileirao{season}A.txt"
         if path.exists():
             frames.append(parse_matches(path))
 

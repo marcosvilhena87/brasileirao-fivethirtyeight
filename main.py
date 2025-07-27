@@ -9,8 +9,6 @@ from brasileirao import (
     simulate_chances,
     simulate_relegation_chances,
     simulate_final_table,
-    summary_table,
-    league_table,
 )
 
 

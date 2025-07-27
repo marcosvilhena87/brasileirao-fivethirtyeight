@@ -1,12 +1,11 @@
-import os, sys
+import os
+import sys
 import numpy as np
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
-import pandas as pd
 from brasileirao import (
     parse_matches,
     league_table,
     simulate_chances,
-    summary_table,
     estimate_spi_strengths,
     compute_spi_coeffs,
     SPI_DEFAULT_INTERCEPT,
