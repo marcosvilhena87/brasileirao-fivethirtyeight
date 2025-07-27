@@ -640,6 +640,34 @@ def test_initial_ratio_differs_from_ratio_without_matches():
     assert base_res != init_res
 
 
+def test_simulate_chances_initial_points_seed_repeatability_no_matches():
+    data = [
+        {
+            "date": "2025-01-01",
+            "home_team": "Internacional",
+            "away_team": "Bahia",
+            "home_score": np.nan,
+            "away_score": np.nan,
+        }
+    ]
+    df = pd.DataFrame(data)
+    rng = np.random.default_rng(99)
+    first = simulate_chances(
+        df,
+        iterations=5,
+        rating_method="initial_points",
+        rng=rng,
+    )
+    rng = np.random.default_rng(99)
+    second = simulate_chances(
+        df,
+        iterations=5,
+        rating_method="initial_points",
+        rng=rng,
+    )
+    assert first == second
+
+
 def test_team_home_advantages_empty():
     df = parse_matches("data/Brasileirao2025A.txt")
     adv = simulator._estimate_team_home_advantages(df)

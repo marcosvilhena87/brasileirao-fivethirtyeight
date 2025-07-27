@@ -786,6 +786,35 @@ def initial_ratio_strengths(
     return strengths, avg_goals, home_adv
 
 
+def initial_points_strengths(
+    past_path: str | Path = "data/Brasileirao2024A.txt",
+    weight: float = 2 / 3,
+) -> tuple[dict[str, dict[str, float]], float, float]:
+    """Return starting strengths based on past season points.
+
+    The final table of ``past_path`` is calculated via :func:`league_table`.
+    Each club's point total is shrunk toward the league average using
+    ``current = past_points * weight + mean_points * (1 - weight)``.  The
+    resulting ratio to the mean determines the attack and defence factors.
+    ``avg_goals`` and ``home_adv`` from the past season are returned as well.
+    """
+
+    past_matches = parse_matches(past_path)
+    table = league_table(past_matches)
+    _, avg_goals, home_adv = _estimate_strengths(past_matches)
+
+    points = table.set_index("team")["points"].astype(float).to_dict()
+    mean_points = float(np.mean(list(points.values()))) or 1.0
+
+    strengths: dict[str, dict[str, float]] = {}
+    for team, pts in points.items():
+        current = pts * weight + mean_points * (1 - weight)
+        ratio = current / mean_points if mean_points else 1.0
+        strengths[team] = {"attack": ratio, "defense": 1.0 / ratio}
+
+    return strengths, avg_goals, home_adv
+
+
 def _dixon_coles_sample(
     lam: float, mu: float, rho: float, rng: np.random.Generator, max_goals: int = 6
 ) -> tuple[int, int]:
@@ -887,6 +916,8 @@ def get_strengths(
         extra_param = (intercept, slope)
     elif rating_method == "initial_ratio":
         strengths, avg_goals, home_adv = initial_ratio_strengths(smooth=smooth)
+    elif rating_method == "initial_points":
+        strengths, avg_goals, home_adv = initial_points_strengths()
     elif rating_method == "leader_history":
         paths = leader_history_paths or ["data/Brasileirao2024A.txt"]
         strengths, avg_goals, home_adv = estimate_leader_history_strengths(
