@@ -27,15 +27,28 @@ def main() -> None:
         default=None,
         help="random seed for repeatable simulations",
     )
+    parser.add_argument(
+        "--home-advantage-file",
+        default=None,
+        help="JSON mapping teams to home advantage multipliers",
+    )
     args = parser.parse_args()
 
     matches = parse_matches(args.file)
     rng = np.random.default_rng(args.seed) if args.seed is not None else None
+    if args.home_advantage_file:
+        import json
+
+        with open(args.home_advantage_file, "r", encoding="utf-8") as f:
+            team_home = json.load(f)
+    else:
+        team_home = None
     chances = simulate_chances(
         matches,
         iterations=args.simulations,
         rng=rng,
         market_path=args.market_path,
+        team_home_advantages=team_home,
     )
 
     relegation = simulate_relegation_chances(
@@ -43,6 +56,7 @@ def main() -> None:
         iterations=args.simulations,
         rng=rng,
         market_path=args.market_path,
+        team_home_advantages=team_home,
     )
 
     table_proj = simulate_final_table(
@@ -50,6 +64,7 @@ def main() -> None:
         iterations=args.simulations,
         rng=rng,
         market_path=args.market_path,
+        team_home_advantages=team_home,
     )
 
     # print("Title chances:")

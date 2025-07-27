@@ -6,6 +6,7 @@ from brasileirao import (
     parse_matches,
     league_table,
     simulate_chances,
+    simulate_final_table,
     estimate_spi_strengths,
     compute_spi_coeffs,
     SPI_DEFAULT_INTERCEPT,
@@ -92,3 +93,18 @@ def test_spi_sequential_updates_differ_from_static():
         not np.isclose(dynamic[t]["attack"], static[t]["attack"]) for t in dynamic
     )
     assert changed
+
+
+def test_team_home_advantage_changes_results():
+    df = parse_matches("data/Brasileirao2025A.txt")
+    rng = np.random.default_rng(0)
+    base = simulate_final_table(df, iterations=10, rng=rng)
+
+    rng = np.random.default_rng(0)
+    advantaged = simulate_final_table(
+        df, iterations=10, rng=rng, team_home_advantages={"Palmeiras": 2.0}
+    )
+
+    base_pts = base.loc[base.team == "Palmeiras", "points"].iloc[0]
+    adv_pts = advantaged.loc[advantaged.team == "Palmeiras", "points"].iloc[0]
+    assert base_pts != adv_pts
