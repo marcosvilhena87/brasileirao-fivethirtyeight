@@ -546,3 +546,19 @@ def test_league_table_head_to_head_tiebreak():
     df = pd.DataFrame(data)
     table = league_table(df)
     assert list(table.team[:2]) == ["B", "A"]
+
+
+def test_initial_spi_strengths_weighting():
+    past = parse_matches("data/Brasileirao2024A.txt")
+    base, _, _, inter, slope = simulator.estimate_spi_strengths(
+        past, market_path="data/Brasileirao2024A.csv"
+    )
+    weighted, _, _, inter2, slope2 = simulator.initial_spi_strengths(
+        past_path="data/Brasileirao2024A.txt", weight=0.5, market_path="data/Brasileirao2024A.csv"
+    )
+    assert np.isclose(inter, inter2)
+    assert np.isclose(slope, slope2)
+    avg_attack = np.mean([v["attack"] for v in base.values()])
+    for t in base:
+        expect = base[t]["attack"] * 0.5 + avg_attack * 0.5
+        assert np.isclose(weighted[t]["attack"], expect)

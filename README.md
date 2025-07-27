@@ -40,6 +40,9 @@ different CSV file.  The fitted intercept and slope are used to convert an
 expected goal difference into win/draw/loss probabilities during the
 simulation. When no matches have been played the function returns default
 coefficients of ``-0.180149`` and ``0.228628`` based on the 2023–2024 seasons.
+The helper ``initial_spi_strengths`` can be used at the start of a season to
+shrink each team's previous rating towards the league average following
+``current = previous × weight + mean × (1 − weight)``.
 
 The script outputs the estimated chance of winning the title for each team. It then prints the probability of each side finishing in the bottom four and being relegated.
 It also estimates the average final position and points of every club.
