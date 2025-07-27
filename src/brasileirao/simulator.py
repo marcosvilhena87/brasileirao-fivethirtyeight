@@ -1039,7 +1039,7 @@ def _simulate_table(
 def simulate_chances(
     matches: pd.DataFrame,
     iterations: int = 1000,
-    rating_method: str = "ratio",
+    rating_method: str = "spi",
     rng: np.random.Generator | None = None,
     elo_k: float = 20.0,
     home_field_advantage: float = 0.0,
@@ -1129,7 +1129,7 @@ def simulate_chances(
 def simulate_relegation_chances(
     matches: pd.DataFrame,
     iterations: int = 1000,
-    rating_method: str = "ratio",
+    rating_method: str = "spi",
     rng: np.random.Generator | None = None,
     elo_k: float = 20.0,
     home_field_advantage: float = 0.0,
@@ -1203,7 +1203,7 @@ def simulate_relegation_chances(
 def simulate_final_table(
     matches: pd.DataFrame,
     iterations: int = 1000,
-    rating_method: str = "ratio",
+    rating_method: str = "spi",
     rng: np.random.Generator | None = None,
     elo_k: float = 20.0,
     home_field_advantage: float = 0.0,
@@ -1301,7 +1301,7 @@ def simulate_final_table(
 def summary_table(
     matches: pd.DataFrame,
     iterations: int = 1000,
-    rating_method: str = "ratio",
+    rating_method: str = "spi",
     rng: np.random.Generator | None = None,
     elo_k: float = 20.0,
     home_field_advantage: float = 0.0,
