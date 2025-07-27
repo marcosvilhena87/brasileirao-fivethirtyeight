@@ -787,6 +787,7 @@ def estimate_spi_strengths(
     market_path: str | Path = "data/Brasileirao2025A.csv",
     smooth: float = 1.0,
     decay_rate: float | None = None,
+    match_weights: pd.Series | None = None,
     *,
     K: float = 0.05,
 ) -> tuple[dict[str, dict[str, float]], float, float, float, float]:
@@ -800,8 +801,10 @@ def estimate_spi_strengths(
     probabilities when simulating matches.  The function returns five values:
     the strengths dictionary, average goals per game, baseline home advantage,
     intercept and slope.  The ``market_path`` parameter can be used to supply a
-    custom CSV file with team market values.  ``K`` controls the magnitude
-    of rating updates after each played match.
+    custom CSV file with team market values.  ``match_weights`` may provide a
+    sequence of weights for the played matches when fitting the logistic
+    regression. ``K`` controls the magnitude of rating updates after each played
+    match.
     """
 
     strengths, avg_goals, home_adv = estimate_market_strengths(
@@ -839,7 +842,13 @@ def estimate_spi_strengths(
     import statsmodels.api as sm
 
     exog = sm.add_constant(pd.Series(diffs, name="diff"))
-    model = sm.Logit(outcomes, exog).fit(disp=False)
+    if match_weights is not None:
+        w = pd.Series(match_weights.loc[played.index], index=exog.index)
+        model = sm.GLM(
+            outcomes, exog, family=sm.families.Binomial(), freq_weights=w
+        ).fit(disp=False)
+    else:
+        model = sm.Logit(outcomes, exog).fit(disp=False)
 
     intercept = float(model.params["const"])
     slope = float(model.params["diff"])

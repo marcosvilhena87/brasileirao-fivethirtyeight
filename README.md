@@ -31,8 +31,10 @@ shrink each team's previous rating towards the league average following
 The ``compute_spi_coeffs`` helper scans the ``data/`` folder for past seasons
 and recalculates the logistic regression intercept and slope.  Seasons can be
 specified via the ``BRASILEIRAO_SEASONS`` environment variable or the
-``--seasons`` argument of the ``spi_coeffs`` module.  When no historical files
-are present the default coefficients above are returned.
+``--seasons`` argument of the ``spi_coeffs`` module.  ``--decay-rate`` applies
+exponential weighting to older seasons using ``exp(-decay_rate * age)`` where
+``age`` counts seasons back from the most recent.  When no historical files are
+present the default coefficients above are returned.
 
 To recompute these coefficients yourself run:
 
@@ -40,7 +42,8 @@ To recompute these coefficients yourself run:
 PYTHONPATH=src python -m brasileirao.spi_coeffs
 ```
 By default all seasons in ``data/`` are used.  You may pass ``--seasons`` or set
-``BRASILEIRAO_SEASONS`` to limit the years included.
+``BRASILEIRAO_SEASONS`` to limit the years included.  ``--decay-rate`` controls
+how quickly older seasons lose influence.
 
 The script outputs the estimated chance of winning the title for each team. It
 then prints the probability of each side finishing in the bottom four and being
