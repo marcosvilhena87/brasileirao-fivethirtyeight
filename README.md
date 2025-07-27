@@ -11,6 +11,12 @@ pip install -r requirements.txt
 python main.py --simulations 1000
 ```
 
+By default the command line uses the `spi` rating method. The logistic
+regression intercept and slope are recalculated from the historical season
+files found in `data/` so the predictions reflect recent results. For a new
+campaign without any completed fixtures you can initialise the ratings using
+``initial_spi_strengths``.
+
 The simulator uses a FiveThirtyEight-style model (SPI) to estimate team
 strengths. Use the `--market-path` option to specify an alternative CSV with
 team market values. The `--seed` argument sets the random seed for reproducible
