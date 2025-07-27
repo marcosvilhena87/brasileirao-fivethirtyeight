@@ -638,3 +638,12 @@ def test_initial_ratio_differs_from_ratio_without_matches():
     rng = np.random.default_rng(9)
     init_res = simulate_chances(df, iterations=20, rating_method="initial_ratio", rng=rng)
     assert base_res != init_res
+
+
+def test_team_home_advantages_empty():
+    df = parse_matches("data/Brasileirao2025A.txt")
+    adv = simulator._estimate_team_home_advantages(df)
+    teams = pd.unique(df[["home_team", "away_team"]].values.ravel())
+    assert isinstance(adv, dict)
+    assert set(adv.keys()) == set(teams)
+    assert all(v == 1.0 for v in adv.values())
