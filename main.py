@@ -19,64 +19,15 @@ def main() -> None:
     parser.add_argument("--file", default="data/Brasileirao2025A.txt", help="fixture file path")
     parser.add_argument("--simulations", type=int, default=1000, help="number of simulation runs")
     parser.add_argument(
-        "--rating",
-        default="spi",
-        choices=[
-            "ratio",
-            "historic_ratio",
-            "poisson",
-            "neg_binom",
-            "skellam",
-            "elo",
-            "spi",
-            "initial_spi",
-            "initial_ratio",
-            "initial_points",
-            "initial_points_market",
-            "leader_history",
-        ],
-        help="team strength estimation method (use 'historic_ratio' to include past season, 'initial_spi', 'initial_ratio', 'initial_points', or 'initial_points_market' to blend prior ratings)",
+        "--market-path",
+        default="data/Brasileirao2025A.csv",
+        help="CSV with team market values for the FiveThirtyEight model",
     )
     parser.add_argument(
         "--seed",
         type=int,
         default=None,
         help="random seed for repeatable simulations",
-    )
-    parser.add_argument(
-        "--elo-k",
-        type=float,
-        default=20.0,
-        help="Elo K factor when using the 'elo' rating method",
-    )
-    parser.add_argument(
-        "--elo-home-advantage",
-        type=float,
-        default=0.0,
-        help="Rating points added to the home team in Elo calculations",
-    )
-    parser.add_argument(
-        "--leader-history-paths",
-        nargs="*",
-        default=["data/Brasileirao2024A.txt"],
-        help="Past season files for leader_history rating method",
-    )
-    parser.add_argument(
-        "--leader-weight",
-        type=float,
-        default=0.5,
-        help="Weight for leader_history influence",
-    )
-    parser.add_argument(
-        "--smooth",
-        type=float,
-        default=1.0,
-        help="Smoothing constant for ratio-based ratings",
-    )
-    parser.add_argument(
-        "--market-path",
-        default="data/Brasileirao2025A.csv",
-        help="CSV with team market values for the spi rating method",
     )
     args = parser.parse_args()
 
@@ -85,39 +36,21 @@ def main() -> None:
     chances = simulate_chances(
         matches,
         iterations=args.simulations,
-        rating_method=args.rating,
         rng=rng,
-        elo_k=args.elo_k,
-        home_field_advantage=args.elo_home_advantage,
-        leader_history_paths=args.leader_history_paths,
-        leader_history_weight=args.leader_weight,
-        smooth=args.smooth,
         market_path=args.market_path,
     )
 
     relegation = simulate_relegation_chances(
         matches,
         iterations=args.simulations,
-        rating_method=args.rating,
         rng=rng,
-        elo_k=args.elo_k,
-        home_field_advantage=args.elo_home_advantage,
-        leader_history_paths=args.leader_history_paths,
-        leader_history_weight=args.leader_weight,
-        smooth=args.smooth,
         market_path=args.market_path,
     )
 
     table_proj = simulate_final_table(
         matches,
         iterations=args.simulations,
-        rating_method=args.rating,
         rng=rng,
-        elo_k=args.elo_k,
-        home_field_advantage=args.elo_home_advantage,
-        leader_history_paths=args.leader_history_paths,
-        leader_history_weight=args.leader_weight,
-        smooth=args.smooth,
         market_path=args.market_path,
     )
 
