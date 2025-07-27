@@ -9,6 +9,7 @@ from brasileirao import (
     simulate_final_table,
     estimate_spi_strengths,
     compute_spi_coeffs,
+    initial_spi_strengths,
     SPI_DEFAULT_INTERCEPT,
     SPI_DEFAULT_SLOPE,
 )
@@ -118,3 +119,18 @@ def test_spi_coeffs_decay_changes_values():
         np.isclose(no_decay[0], with_decay[0])
         and np.isclose(no_decay[1], with_decay[1])
     )
+
+
+def test_initial_spi_strengths_with_seasons():
+    seasons = ["2023", "2024"]
+    expected = compute_spi_coeffs(
+        seasons=seasons, decay_rate=0.0, market_path="data/Brasileirao2024A.csv"
+    )
+    default = initial_spi_strengths()
+    overriden = initial_spi_strengths(seasons=seasons)
+
+    assert not (
+        np.isclose(default[3], expected[0]) and np.isclose(default[4], expected[1])
+    )
+    assert np.isclose(overriden[3], expected[0])
+    assert np.isclose(overriden[4], expected[1])

@@ -28,6 +28,12 @@ The helper ``initial_spi_strengths`` can be used at the start of a season to
 shrink each team's previous rating towards the league average following
 ``current = previous × weight + mean × (1 − weight)``.
 
+Passing a list of ``seasons`` to ``initial_spi_strengths`` replaces the logistic
+regression coefficients with those produced by ``compute_spi_coeffs`` across the
+specified years.  For instance::
+
+    initial_spi_strengths(seasons=["2023", "2024"])
+
 The ``compute_spi_coeffs`` helper scans the ``data/`` folder for past seasons
 and recalculates the logistic regression intercept and slope.  Seasons can be
 specified via the ``BRASILEIRAO_SEASONS`` environment variable or the

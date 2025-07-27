@@ -895,6 +895,7 @@ def initial_spi_strengths(
     market_path: str | Path = "data/Brasileirao2024A.csv",
     smooth: float = 1.0,
     decay_rate: float | None = None,
+    seasons: list[str] | None = None,
 ) -> tuple[dict[str, dict[str, float]], float, float, float, float]:
     """Return starting SPI strengths for a new season.
 
@@ -902,12 +903,26 @@ def initial_spi_strengths(
     average using ``weight`` similar to FiveThirtyEight's approach:
 
     ``current = previous * weight + league_mean * (1 - weight)``.
+
+    When ``seasons`` is provided the logistic regression coefficients are
+    recalculated across those years using :func:`compute_spi_coeffs` and replace
+    the values obtained from the past season alone.
     """
 
     past_matches = parse_matches(past_path)
     strengths, avg_goals, home_adv, intercept, slope = estimate_spi_strengths(
         past_matches, market_path=market_path, smooth=smooth, decay_rate=decay_rate
     )
+
+    if seasons is not None:
+        from .spi_coeffs import compute_spi_coeffs
+
+        intercept, slope = compute_spi_coeffs(
+            seasons=seasons,
+            market_path=market_path,
+            smooth=smooth,
+            decay_rate=decay_rate or 0.0,
+        )
 
     avg_attack = float(np.mean([s["attack"] for s in strengths.values()]))
     avg_defense = float(np.mean([s["defense"] for s in strengths.values()]))
