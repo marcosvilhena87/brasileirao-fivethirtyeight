@@ -251,16 +251,8 @@ def _estimate_team_home_advantages(matches: pd.DataFrame) -> dict[str, float]:
     played = matches.dropna(subset=["home_score", "away_score"])
 
     if played.empty:
-        return _estimate_strengths(matches)
-
-    if played.empty:
-        return _estimate_strengths(matches)
-
-    if played.empty:
-        return _estimate_strengths(matches)
-
-    if played.empty:
-        return _estimate_strengths(matches)
+        teams = pd.unique(matches[["home_team", "away_team"]].values.ravel())
+        return {t: 1.0 for t in teams}
     teams = pd.unique(matches[["home_team", "away_team"]].values.ravel())
 
     total_home = played["home_score"].sum()
