@@ -29,9 +29,10 @@ def main() -> None:
             "skellam",
             "elo",
             "spi",
+            "initial_spi",
             "leader_history",
         ],
-        help="team strength estimation method (use 'historic_ratio' to include past season)",
+        help="team strength estimation method (use 'historic_ratio' to include past season or 'initial_spi' to blend prior ratings)",
     )
     parser.add_argument(
         "--seed",
