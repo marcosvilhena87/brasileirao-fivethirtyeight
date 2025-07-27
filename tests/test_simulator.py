@@ -7,6 +7,9 @@ from brasileirao import (
     league_table,
     simulate_chances,
     estimate_spi_strengths,
+    compute_spi_coeffs,
+    SPI_DEFAULT_INTERCEPT,
+    SPI_DEFAULT_SLOPE,
 )
 
 
@@ -38,3 +41,9 @@ def test_estimate_spi_strengths_returns_five_values():
     assert len(result) == 5
     assert isinstance(result[-1], float)
     assert isinstance(result[-2], float)
+
+
+def test_compute_spi_coeffs_empty_returns_defaults():
+    intercept, slope = compute_spi_coeffs(seasons=[])
+    assert intercept == SPI_DEFAULT_INTERCEPT
+    assert slope == SPI_DEFAULT_SLOPE
