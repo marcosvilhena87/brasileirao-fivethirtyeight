@@ -218,25 +218,52 @@ def compute_leader_stats(matches: pd.DataFrame) -> dict[str, int]:
     return leader_counts
 
 
-def _estimate_strengths(matches: pd.DataFrame, smooth: float = 1.0):
-    played = matches.dropna(subset=['home_score', 'away_score'])
-    total_goals = played['home_score'].sum() + played['away_score'].sum()
-    total_games = len(played)
+def _estimate_strengths(
+    matches: pd.DataFrame,
+    smooth: float = 1.0,
+    decay_rate: float | None = None,
+):
+    """Return basic ratio strengths from ``matches``.
+
+    When ``decay_rate`` is provided each match is weighted by
+    ``exp(-decay_rate * days_since)`` where ``days_since`` is the number of days
+    since the most recent fixture.  A rate of ``0`` (the default) applies equal
+    weight to all games.
+    """
+
+    played = matches.dropna(subset=["home_score", "away_score"]).copy()
+
+    if decay_rate and not played.empty:
+        latest = played["date"].max()
+        days = (latest - played["date"]).dt.days
+        played["weight"] = np.exp(-decay_rate * days)
+    else:
+        played["weight"] = 1.0
+
+    total_goals = (played["home_score"] * played["weight"]).sum() + (
+        played["away_score"] * played["weight"]
+    ).sum()
+    total_games = played["weight"].sum()
     avg_goals = total_goals / total_games if total_games else 2.5
-    home_adv = played['home_score'].sum() / played['away_score'].sum() if played['away_score'].sum() else 1.0
+    away_sum = (played["away_score"] * played["weight"]).sum()
+    home_sum = (played["home_score"] * played["weight"]).sum()
+    home_adv = home_sum / away_sum if away_sum else 1.0
 
     teams = pd.unique(matches[['home_team', 'away_team']].values.ravel())
     strengths = {}
     for team in teams:
+        home_mask = played.home_team == team
+        away_mask = played.away_team == team
+
         gf = (
-            played.loc[played.home_team == team, 'home_score'].sum() +
-            played.loc[played.away_team == team, 'away_score'].sum()
+            (played.loc[home_mask, "home_score"] * played.loc[home_mask, "weight"]).sum()
+            + (played.loc[away_mask, "away_score"] * played.loc[away_mask, "weight"]).sum()
         )
         ga = (
-            played.loc[played.home_team == team, 'away_score'].sum() +
-            played.loc[played.away_team == team, 'home_score'].sum()
+            (played.loc[home_mask, "away_score"] * played.loc[home_mask, "weight"]).sum()
+            + (played.loc[away_mask, "home_score"] * played.loc[away_mask, "weight"]).sum()
         )
-        gp = played.loc[(played.home_team == team) | (played.away_team == team)].shape[0]
+        gp = played.loc[home_mask | away_mask, "weight"].sum()
         if gp == 0:
             attack = defense = 1.0
         else:
@@ -306,13 +333,16 @@ def estimate_market_strengths(
     matches: pd.DataFrame,
     market_path: str | Path = "data/Brasileirao2025A.csv",
     smooth: float = 1.0,
+    decay_rate: float | None = None,
 ) -> tuple[dict[str, dict[str, float]], float, float]:
     """Estimate strengths adjusted by team market values.
 
     Returns the attack and defence strengths for each team, the overall
     average goals per game and the baseline home advantage factor.
     """
-    strengths, avg_goals, home_adv = _estimate_strengths(matches, smooth=smooth)
+    strengths, avg_goals, home_adv = _estimate_strengths(
+        matches, smooth=smooth, decay_rate=decay_rate
+    )
 
     market_values = load_market_values(market_path)
     if market_values:
@@ -333,6 +363,7 @@ def estimate_strengths_with_history(
     past_path: str | Path = "data/Brasileirao2024A.txt",
     past_weight: float = 0.5,
     smooth: float = 1.0,
+    decay_rate: float | None = None,
 ) -> tuple[dict[str, dict[str, float]], float, float]:
     """Estimate strengths using current season matches and weighted history."""
     if current_matches is None:
@@ -341,7 +372,7 @@ def estimate_strengths_with_history(
     if 0 < past_weight < 1:
         past_matches = past_matches.sample(frac=past_weight, random_state=0).reset_index(drop=True)
     combined = pd.concat([current_matches, past_matches], ignore_index=True)
-    return _estimate_strengths(combined, smooth=smooth)
+    return _estimate_strengths(combined, smooth=smooth, decay_rate=decay_rate)
 
 
 def estimate_leader_history_strengths(
@@ -349,11 +380,14 @@ def estimate_leader_history_strengths(
     past_paths: list[str | Path] | str | Path = "data/Brasileirao2024A.txt",
     weight: float = 0.5,
     smooth: float = 1.0,
+    decay_rate: float | None = None,
 ) -> tuple[dict[str, dict[str, float]], float, float]:
     """Estimate strengths influenced by historical league leaders."""
     if current_matches is None:
         current_matches = parse_matches("data/Brasileirao2025A.txt")
-    strengths, avg_goals, home_adv = _estimate_strengths(current_matches, smooth=smooth)
+    strengths, avg_goals, home_adv = _estimate_strengths(
+        current_matches, smooth=smooth, decay_rate=decay_rate
+    )
 
     if isinstance(past_paths, (str, Path)):
         past_paths = [past_paths]
@@ -679,6 +713,7 @@ def estimate_spi_strengths(
     matches: pd.DataFrame,
     market_path: str | Path = "data/Brasileirao2025A.csv",
     smooth: float = 1.0,
+    decay_rate: float | None = None,
 ) -> tuple[dict[str, dict[str, float]], float, float, float, float]:
     """Estimate strengths with a logistic regression on match outcomes.
 
@@ -694,7 +729,7 @@ def estimate_spi_strengths(
     """
 
     strengths, avg_goals, home_adv = estimate_market_strengths(
-        matches, market_path=market_path, smooth=smooth
+        matches, market_path=market_path, smooth=smooth, decay_rate=decay_rate
     )
 
     played = matches.dropna(subset=["home_score", "away_score"])
@@ -739,6 +774,7 @@ def initial_spi_strengths(
     *,
     market_path: str | Path = "data/Brasileirao2024A.csv",
     smooth: float = 1.0,
+    decay_rate: float | None = None,
 ) -> tuple[dict[str, dict[str, float]], float, float, float, float]:
     """Return starting SPI strengths for a new season.
 
@@ -750,7 +786,7 @@ def initial_spi_strengths(
 
     past_matches = parse_matches(past_path)
     strengths, avg_goals, home_adv, intercept, slope = estimate_spi_strengths(
-        past_matches, market_path=market_path, smooth=smooth
+        past_matches, market_path=market_path, smooth=smooth, decay_rate=decay_rate
     )
 
     avg_attack = float(np.mean([s["attack"] for s in strengths.values()]))
@@ -768,6 +804,7 @@ def initial_ratio_strengths(
     weight: float = 2 / 3,
     *,
     smooth: float = 1.0,
+    decay_rate: float | None = None,
 ) -> tuple[dict[str, dict[str, float]], float, float]:
     """Return starting ratio strengths for a new season.
 
@@ -776,7 +813,9 @@ def initial_ratio_strengths(
     """
 
     past_matches = parse_matches(past_path)
-    strengths, avg_goals, home_adv = _estimate_strengths(past_matches, smooth=smooth)
+    strengths, avg_goals, home_adv = _estimate_strengths(
+        past_matches, smooth=smooth, decay_rate=decay_rate
+    )
 
     avg_attack = float(np.mean([s["attack"] for s in strengths.values()]))
     avg_defense = float(np.mean([s["defense"] for s in strengths.values()]))
@@ -791,6 +830,8 @@ def initial_ratio_strengths(
 def initial_points_strengths(
     past_path: str | Path = "data/Brasileirao2024A.txt",
     weight: float = 2 / 3,
+    *,
+    decay_rate: float | None = None,
 ) -> tuple[dict[str, dict[str, float]], float, float]:
     """Return starting strengths based on past season points.
 
@@ -803,7 +844,9 @@ def initial_points_strengths(
 
     past_matches = parse_matches(past_path)
     table = league_table(past_matches)
-    _, avg_goals, home_adv = _estimate_strengths(past_matches)
+    _, avg_goals, home_adv = _estimate_strengths(
+        past_matches, decay_rate=decay_rate
+    )
 
     points = table.set_index("team")["points"].astype(float).to_dict()
     mean_points = float(np.mean(list(points.values()))) or 1.0
@@ -823,6 +866,7 @@ def initial_points_market_strengths(
     *,
     points_weight: float = 2 / 3,
     market_weight: float = 1 / 3,
+    decay_rate: float | None = None,
 ) -> tuple[dict[str, dict[str, float]], float, float]:
     """Return starting strengths from points and market values.
 
@@ -834,7 +878,9 @@ def initial_points_market_strengths(
 
     past_matches = parse_matches(past_path)
     table = league_table(past_matches)
-    _, avg_goals, home_adv = _estimate_strengths(past_matches)
+    _, avg_goals, home_adv = _estimate_strengths(
+        past_matches, decay_rate=decay_rate
+    )
 
     points = table.set_index("team")["points"].astype(float).to_dict()
     mean_points = float(np.mean(list(points.values()))) or 1.0
@@ -903,6 +949,7 @@ def get_strengths(
     leader_history_weight: float = 0.5,
     smooth: float = 1.0,
     market_path: str | Path = "data/Brasileirao2025A.csv",
+    decay_rate: float | None = None,
 ) -> tuple[dict[str, dict[str, float]], float, float, float]:
     """Return strength estimates for ``matches`` using ``rating_method``.
 
@@ -931,7 +978,9 @@ def get_strengths(
     elif rating_method == "skellam":
         strengths, avg_goals, home_adv = estimate_skellam_strengths(matches)
     elif rating_method == "historic_ratio":
-        strengths, avg_goals, home_adv = estimate_strengths_with_history(matches, smooth=smooth)
+        strengths, avg_goals, home_adv = estimate_strengths_with_history(
+            matches, smooth=smooth, decay_rate=decay_rate
+        )
     elif rating_method == "elo":
         strengths, avg_goals, home_adv = estimate_elo_strengths(
             matches, K=elo_k, home_field_advantage=home_field_advantage
@@ -940,7 +989,7 @@ def get_strengths(
         strengths, avg_goals, home_adv, extra_param = estimate_dixon_coles_strengths(matches)
     elif rating_method == "spi":
         strengths, avg_goals, home_adv, intercept, slope = estimate_spi_strengths(
-            matches, market_path=market_path, smooth=smooth
+            matches, market_path=market_path, smooth=smooth, decay_rate=decay_rate
         )
         extra_param = (intercept, slope)
     elif rating_method == "initial_spi":
@@ -950,23 +999,29 @@ def get_strengths(
             home_adv,
             intercept,
             slope,
-        ) = initial_spi_strengths(market_path=market_path, smooth=smooth)
+        ) = initial_spi_strengths(
+            market_path=market_path, smooth=smooth, decay_rate=decay_rate
+        )
         extra_param = (intercept, slope)
     elif rating_method == "initial_ratio":
-        strengths, avg_goals, home_adv = initial_ratio_strengths(smooth=smooth)
+        strengths, avg_goals, home_adv = initial_ratio_strengths(
+            smooth=smooth, decay_rate=decay_rate
+        )
     elif rating_method == "initial_points":
-        strengths, avg_goals, home_adv = initial_points_strengths()
+        strengths, avg_goals, home_adv = initial_points_strengths(decay_rate=decay_rate)
     elif rating_method == "initial_points_market":
         strengths, avg_goals, home_adv = initial_points_market_strengths(
-            market_path=market_path
+            market_path=market_path, decay_rate=decay_rate
         )
     elif rating_method == "leader_history":
         paths = leader_history_paths or ["data/Brasileirao2024A.txt"]
         strengths, avg_goals, home_adv = estimate_leader_history_strengths(
-            matches, paths, weight=leader_history_weight, smooth=smooth
+            matches, paths, weight=leader_history_weight, smooth=smooth, decay_rate=decay_rate
         )
     else:
-        strengths, avg_goals, home_adv = _estimate_strengths(matches, smooth=smooth)
+        strengths, avg_goals, home_adv = _estimate_strengths(
+            matches, smooth=smooth, decay_rate=decay_rate
+        )
 
     return strengths, avg_goals, home_adv, extra_param
 
@@ -1050,6 +1105,7 @@ def simulate_chances(
     leader_history_weight: float = 0.5,
     smooth: float = 1.0,
     market_path: str | Path = "data/Brasileirao2025A.csv",
+    decay_rate: float | None = None,
 ) -> dict[str, float]:
     """Simulate remaining fixtures and return title probabilities.
 
@@ -1082,6 +1138,9 @@ def simulate_chances(
     market_path : str | Path, default "data/Brasileirao2025A.csv"
         CSV file with team market values used by the ``"spi"`` or
         ``"initial_spi"`` rating method.
+    decay_rate : float | None, optional
+        Exponential decay factor applied to older matches when estimating
+        strengths. ``None`` or ``0`` gives equal weight to all results.
     """
     if rng is None:
         rng = np.random.default_rng()
@@ -1102,6 +1161,7 @@ def simulate_chances(
         leader_history_weight=leader_history_weight,
         smooth=smooth,
         market_path=market_path,
+        decay_rate=decay_rate,
     )
     teams = pd.unique(matches[['home_team', 'away_team']].values.ravel())
     champs = {t: 0 for t in teams}
@@ -1140,6 +1200,7 @@ def simulate_relegation_chances(
     leader_history_weight: float = 0.5,
     smooth: float = 1.0,
     market_path: str | Path = "data/Brasileirao2025A.csv",
+    decay_rate: float | None = None,
 ) -> dict[str, float]:
     """Simulate remaining fixtures and return relegation probabilities.
 
@@ -1153,6 +1214,9 @@ def simulate_relegation_chances(
     market_path : str | Path, default "data/Brasileirao2025A.csv"
         CSV file with team market values used by the ``"spi"`` or
         ``"initial_spi"`` rating method.
+    decay_rate : float | None, optional
+        Exponential decay factor applied to older matches when estimating
+        strengths. ``None`` or ``0`` gives equal weight to all results.
     """
 
     if rng is None:
@@ -1174,6 +1238,7 @@ def simulate_relegation_chances(
         leader_history_weight=leader_history_weight,
         smooth=smooth,
         market_path=market_path,
+        decay_rate=decay_rate,
     )
 
     teams = pd.unique(matches[["home_team", "away_team"]].values.ravel())
@@ -1214,6 +1279,7 @@ def simulate_final_table(
     leader_history_weight: float = 0.5,
     smooth: float = 1.0,
     market_path: str | Path = "data/Brasileirao2025A.csv",
+    decay_rate: float | None = None,
 ) -> pd.DataFrame:
     """Project final league positions and points for each team.
 
@@ -1225,6 +1291,9 @@ def simulate_final_table(
     market_path : str | Path, default "data/Brasileirao2025A.csv"
         CSV file with team market values used by the ``"spi"`` or
         ``"initial_spi"`` rating method.
+    decay_rate : float | None, optional
+        Exponential decay factor applied to older matches when estimating
+        strengths. ``None`` or ``0`` gives equal weight to all results.
     """
 
     if rng is None:
@@ -1246,6 +1315,7 @@ def simulate_final_table(
         leader_history_weight=leader_history_weight,
         smooth=smooth,
         market_path=market_path,
+        decay_rate=decay_rate,
     )
 
     teams = pd.unique(matches[["home_team", "away_team"]].values.ravel())
@@ -1312,6 +1382,7 @@ def summary_table(
     leader_history_weight: float = 0.5,
     smooth: float = 1.0,
     market_path: str | Path = "data/Brasileirao2025A.csv",
+    decay_rate: float | None = None,
 ) -> pd.DataFrame:
     """Return combined projections for each team.
 
@@ -1325,6 +1396,9 @@ def summary_table(
     market_path : str | Path, default "data/Brasileirao2025A.csv"
         CSV file with team market values used by the ``"spi"`` or
         ``"initial_spi"`` rating method.
+    decay_rate : float | None, optional
+        Exponential decay factor applied to older matches when estimating
+        strengths. ``None`` or ``0`` gives equal weight to all results.
     """
 
     chances = simulate_chances(
@@ -1339,6 +1413,7 @@ def summary_table(
         leader_history_weight=leader_history_weight,
         smooth=smooth,
         market_path=market_path,
+        decay_rate=decay_rate,
     )
     relegation = simulate_relegation_chances(
         matches,
@@ -1352,6 +1427,7 @@ def summary_table(
         leader_history_weight=leader_history_weight,
         smooth=smooth,
         market_path=market_path,
+        decay_rate=decay_rate,
     )
     table = simulate_final_table(
         matches,
@@ -1365,6 +1441,7 @@ def summary_table(
         leader_history_weight=leader_history_weight,
         smooth=smooth,
         market_path=market_path,
+        decay_rate=decay_rate,
     )
 
     table = table.sort_values("position").reset_index(drop=True)
