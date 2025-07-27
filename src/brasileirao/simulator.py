@@ -815,6 +815,42 @@ def initial_points_strengths(
     return strengths, avg_goals, home_adv
 
 
+def initial_points_market_strengths(
+    past_path: str | Path = "data/Brasileirao2024A.txt",
+    market_path: str | Path = "data/Brasileirao2024A.csv",
+    *,
+    points_weight: float = 2 / 3,
+    market_weight: float = 1 / 3,
+) -> tuple[dict[str, dict[str, float]], float, float]:
+    """Return starting strengths from points and market values.
+
+    Each team's rating is a weighted mix of its final points in ``past_path`` and
+    its market value from ``market_path``. The weights default to two thirds for
+    the point ratio and one third for the market value ratio following
+    FiveThirtyEight's approach.
+    """
+
+    past_matches = parse_matches(past_path)
+    table = league_table(past_matches)
+    _, avg_goals, home_adv = _estimate_strengths(past_matches)
+
+    points = table.set_index("team")["points"].astype(float).to_dict()
+    mean_points = float(np.mean(list(points.values()))) or 1.0
+
+    market_values = load_market_values(market_path)
+    mean_market = float(np.mean(list(market_values.values()))) or 1.0
+
+    teams = set(points) | set(market_values)
+    strengths: dict[str, dict[str, float]] = {}
+    for team in teams:
+        p_ratio = points.get(team, mean_points) / mean_points if mean_points else 1.0
+        m_ratio = market_values.get(team, mean_market) / mean_market if mean_market else 1.0
+        ratio = points_weight * p_ratio + market_weight * m_ratio
+        strengths[team] = {"attack": ratio, "defense": 1.0 / ratio}
+
+    return strengths, avg_goals, home_adv
+
+
 def _dixon_coles_sample(
     lam: float, mu: float, rho: float, rng: np.random.Generator, max_goals: int = 6
 ) -> tuple[int, int]:
@@ -918,6 +954,10 @@ def get_strengths(
         strengths, avg_goals, home_adv = initial_ratio_strengths(smooth=smooth)
     elif rating_method == "initial_points":
         strengths, avg_goals, home_adv = initial_points_strengths()
+    elif rating_method == "initial_points_market":
+        strengths, avg_goals, home_adv = initial_points_market_strengths(
+            market_path=market_path
+        )
     elif rating_method == "leader_history":
         paths = leader_history_paths or ["data/Brasileirao2024A.txt"]
         strengths, avg_goals, home_adv = estimate_leader_history_strengths(

@@ -684,6 +684,43 @@ def test_simulate_chances_initial_points_seed_repeatability_no_matches():
     assert first == second
 
 
+def test_initial_points_market_strengths_weighting():
+    past = parse_matches("data/Brasileirao2024A.txt")
+    table = league_table(past)
+    market = simulator.load_market_values("data/Brasileirao2024A.csv")
+    strengths, _, _ = simulator.initial_points_market_strengths(
+        past_path="data/Brasileirao2024A.txt",
+        market_path="data/Brasileirao2024A.csv",
+    )
+    mean_points = float(table["points"].mean())
+    mean_market = float(np.mean(list(market.values())))
+    points = table.set_index("team")["points"].astype(float).to_dict()
+    for team in strengths:
+        p_ratio = points.get(team, mean_points) / mean_points
+        m_ratio = market.get(team, mean_market) / mean_market
+        expected = (2 / 3) * p_ratio + (1 / 3) * m_ratio
+        assert np.isclose(strengths[team]["attack"], expected)
+
+
+def test_simulate_chances_initial_points_market_seed_repeatability():
+    df = parse_matches("data/Brasileirao2024A.txt")
+    rng = np.random.default_rng(101)
+    first = simulate_chances(
+        df,
+        iterations=5,
+        rating_method="initial_points_market",
+        rng=rng,
+    )
+    rng = np.random.default_rng(101)
+    second = simulate_chances(
+        df,
+        iterations=5,
+        rating_method="initial_points_market",
+        rng=rng,
+    )
+    assert first == second
+
+
 def test_team_home_advantages_empty():
     df = parse_matches("data/Brasileirao2025A.txt")
     adv = simulator._estimate_team_home_advantages(df)

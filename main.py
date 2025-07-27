@@ -32,9 +32,10 @@ def main() -> None:
             "initial_spi",
             "initial_ratio",
             "initial_points",
+            "initial_points_market",
             "leader_history",
         ],
-        help="team strength estimation method (use 'historic_ratio' to include past season, 'initial_spi', 'initial_ratio', or 'initial_points' to blend prior ratings)",
+        help="team strength estimation method (use 'historic_ratio' to include past season, 'initial_spi', 'initial_ratio', 'initial_points', or 'initial_points_market' to blend prior ratings)",
     )
     parser.add_argument(
         "--seed",
