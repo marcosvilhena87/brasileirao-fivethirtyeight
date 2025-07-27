@@ -11,6 +11,8 @@ from .simulator import (
     estimate_spi_strengths,
     compute_leader_stats,
     estimate_leader_history_strengths,
+    SPI_DEFAULT_INTERCEPT,
+    SPI_DEFAULT_SLOPE,
 )
 from .evaluate import evaluate_methods
 
@@ -26,5 +28,7 @@ __all__ = [
     "compute_leader_stats",
     "estimate_leader_history_strengths",
     "evaluate_methods",
+    "SPI_DEFAULT_INTERCEPT",
+    "SPI_DEFAULT_SLOPE",
 ]
 

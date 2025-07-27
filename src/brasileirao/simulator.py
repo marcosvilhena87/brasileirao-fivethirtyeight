@@ -7,6 +7,10 @@ from pathlib import Path
 from scipy.optimize import minimize
 from scipy.stats import poisson
 
+# Default SPI coefficients derived from the 2023-2024 seasons
+SPI_DEFAULT_INTERCEPT = -0.180149
+SPI_DEFAULT_SLOPE = 0.228628
+
 
 def _parse_date(date_str: str) -> pd.Timestamp:
     """Parse dates from multiple formats."""
@@ -678,7 +682,13 @@ def estimate_spi_strengths(
 
     played = matches.dropna(subset=["home_score", "away_score"])
     if played.empty:
-        return strengths, avg_goals, home_adv, 0.0, 0.0
+        return (
+            strengths,
+            avg_goals,
+            home_adv,
+            SPI_DEFAULT_INTERCEPT,
+            SPI_DEFAULT_SLOPE,
+        )
 
     diffs: list[float] = []
     outcomes: list[int] = []

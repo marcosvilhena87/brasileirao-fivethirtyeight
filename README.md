@@ -38,7 +38,8 @@ defence are scaled by its market value from `data/Brasileirao2025A.csv`.  The
 `estimate_spi_strengths` function accepts a ``market_path`` parameter to load a
 different CSV file.  The fitted intercept and slope are used to convert an
 expected goal difference into win/draw/loss probabilities during the
-simulation.
+simulation. When no matches have been played the function returns default
+coefficients of ``-0.180149`` and ``0.228628`` based on the 2023–2024 seasons.
 
 The script outputs the estimated chance of winning the title for each team. It then prints the probability of each side finishing in the bottom four and being relegated.
 It also estimates the average final position and points of every club.
