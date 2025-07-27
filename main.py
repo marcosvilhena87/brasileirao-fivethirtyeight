@@ -13,7 +13,15 @@ from brasileirao import (
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Simulate Brasileirão 2025 title odds")
+    parser = argparse.ArgumentParser(
+        description=(
+            "Simulate Brasileirão 2025 title odds. "
+            "The simulator uses FiveThirtyEight's SPI ratings by default and "
+            "recomputes the logistic regression coefficients from the "
+            "historical seasons in 'data/'. For a new campaign seed the ratings "
+            "with `initial_spi_strengths`."
+        )
+    )
     parser.add_argument("--file", default="data/Brasileirao2025A.txt", help="fixture file path")
     parser.add_argument("--simulations", type=int, default=1000, help="number of simulation runs")
     parser.add_argument(
@@ -49,7 +57,11 @@ def main() -> None:
             "initial_points_market",
             "leader_history",
         ],
-        help="algorithm used to rate teams",
+        help=(
+            "algorithm used to rate teams (default: spi). "
+            "SPI-based methods recompute the coefficients from the historical "
+            "data."
+        ),
     )
     parser.add_argument(
         "--seasons",
