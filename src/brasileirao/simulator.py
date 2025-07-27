@@ -716,6 +716,36 @@ def estimate_spi_strengths(
     return strengths, avg_goals, home_adv, intercept, slope
 
 
+def initial_spi_strengths(
+    past_path: str | Path = "data/Brasileirao2024A.txt",
+    weight: float = 2 / 3,
+    *,
+    market_path: str | Path = "data/Brasileirao2024A.csv",
+    smooth: float = 1.0,
+) -> tuple[dict[str, dict[str, float]], float, float, float, float]:
+    """Return starting SPI strengths for a new season.
+
+    Ratings are derived from ``past_path`` and then shrunk toward the league
+    average using ``weight`` similar to FiveThirtyEight's approach:
+
+    ``current = previous * weight + league_mean * (1 - weight)``.
+    """
+
+    past_matches = parse_matches(past_path)
+    strengths, avg_goals, home_adv, intercept, slope = estimate_spi_strengths(
+        past_matches, market_path=market_path, smooth=smooth
+    )
+
+    avg_attack = float(np.mean([s["attack"] for s in strengths.values()]))
+    avg_defense = float(np.mean([s["defense"] for s in strengths.values()]))
+
+    for s in strengths.values():
+        s["attack"] = s["attack"] * weight + avg_attack * (1 - weight)
+        s["defense"] = s["defense"] * weight + avg_defense * (1 - weight)
+
+    return strengths, avg_goals, home_adv, intercept, slope
+
+
 def _dixon_coles_sample(
     lam: float, mu: float, rho: float, rng: np.random.Generator, max_goals: int = 6
 ) -> tuple[int, int]:
