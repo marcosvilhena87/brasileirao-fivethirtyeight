@@ -32,6 +32,30 @@ def main() -> None:
         default=None,
         help="JSON mapping teams to home advantage multipliers",
     )
+    parser.add_argument(
+        "--rating-method",
+        default="spi",
+        choices=[
+            "spi",
+            "elo",
+            "poisson",
+            "neg_binom",
+            "skellam",
+            "historic_ratio",
+            "dixon_coles",
+            "initial_spi",
+            "initial_ratio",
+            "initial_points",
+            "initial_points_market",
+            "leader_history",
+        ],
+        help="algorithm used to rate teams",
+    )
+    parser.add_argument(
+        "--seasons",
+        nargs="*",
+        help="historical seasons for SPI-based methods",
+    )
     args = parser.parse_args()
 
     matches = parse_matches(args.file)
@@ -46,25 +70,31 @@ def main() -> None:
     chances = simulate_chances(
         matches,
         iterations=args.simulations,
+        rating_method=args.rating_method,
         rng=rng,
         market_path=args.market_path,
         team_home_advantages=team_home,
+        seasons=args.seasons,
     )
 
     relegation = simulate_relegation_chances(
         matches,
         iterations=args.simulations,
+        rating_method=args.rating_method,
         rng=rng,
         market_path=args.market_path,
         team_home_advantages=team_home,
+        seasons=args.seasons,
     )
 
     table_proj = simulate_final_table(
         matches,
         iterations=args.simulations,
+        rating_method=args.rating_method,
         rng=rng,
         market_path=args.market_path,
         team_home_advantages=team_home,
+        seasons=args.seasons,
     )
 
     # print("Title chances:")
