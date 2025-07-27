@@ -149,3 +149,30 @@ def test_initial_spi_strengths_multiple_seasons_changes_output():
     assert not np.isclose(
         single["Palmeiras"]["attack"], multi["Palmeiras"]["attack"]
     )
+
+
+def test_spi_coeffs_uses_season_market_files():
+    seasons = ["2023", "2024"]
+    default = compute_spi_coeffs(seasons=seasons)
+    constant = compute_spi_coeffs(
+        seasons=seasons, market_path="data/Brasileirao2025A.csv"
+    )
+
+    assert not (
+        np.isclose(default[0], constant[0]) and np.isclose(default[1], constant[1])
+    )
+
+
+def test_spi_coeffs_accepts_market_mapping():
+    seasons = ["2023", "2024"]
+    mapping = {
+        "2023": "data/Brasileirao2024A.csv",
+        "2024": "data/Brasileirao2024A.csv",
+    }
+    mapped = compute_spi_coeffs(seasons=seasons, market_path=mapping)
+    constant = compute_spi_coeffs(
+        seasons=seasons, market_path="data/Brasileirao2024A.csv"
+    )
+
+    assert np.isclose(mapped[0], constant[0])
+    assert np.isclose(mapped[1], constant[1])
