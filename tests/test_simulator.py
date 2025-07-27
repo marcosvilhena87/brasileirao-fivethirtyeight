@@ -332,6 +332,22 @@ def test_simulate_chances_spi_seed_repeatability():
     assert abs(sum(chances1.values()) - 1.0) < 1e-6
 
 
+def test_estimate_spi_strengths_defaults():
+    data = [
+        {
+            "date": "2025-01-01",
+            "home_team": "A",
+            "away_team": "B",
+            "home_score": np.nan,
+            "away_score": np.nan,
+        }
+    ]
+    df = pd.DataFrame(data)
+    _, _, _, intercept, slope = simulator.estimate_spi_strengths(df)
+    assert intercept == simulator.SPI_DEFAULT_INTERCEPT
+    assert slope == simulator.SPI_DEFAULT_SLOPE
+
+
 def test_compute_leader_stats():
     data = [
         {
