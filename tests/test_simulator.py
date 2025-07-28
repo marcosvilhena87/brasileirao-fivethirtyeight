@@ -9,6 +9,7 @@ from brasileirao import (
     league_table,
     simulate_chances,
     simulate_final_table,
+    summary_table,
     estimate_spi_strengths,
     compute_spi_coeffs,
     initial_spi_strengths,
@@ -293,3 +294,16 @@ def test_compute_leader_stats_regression():
         "Ceará": 1,
     }
     assert counts == expected
+
+
+def test_summary_table_includes_spi_column():
+    df = parse_matches("data/Brasileirao2025A.txt")
+    table = summary_table(df, iterations=1)
+    assert list(table.columns) == [
+        "position",
+        "team",
+        "spi",
+        "points",
+        "title",
+        "relegation",
+    ]

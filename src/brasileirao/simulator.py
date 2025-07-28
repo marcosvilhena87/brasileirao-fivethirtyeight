@@ -1761,8 +1761,26 @@ def summary_table(
         logistic_decay=logistic_decay,
     )
 
+    strengths, _avg, _ha, _extra = get_strengths(
+        matches,
+        rating_method,
+        elo_k=elo_k,
+        home_field_advantage=home_field_advantage,
+        leader_history_paths=leader_history_paths,
+        leader_history_weight=leader_history_weight,
+        smooth=smooth,
+        market_path=market_path,
+        decay_rate=decay_rate,
+        logistic_decay=logistic_decay,
+    )
+    spi = {
+        t: float(30 * np.log10(max(s["attack"] / s["defense"], 1e-6)) + 75)
+        for t, s in strengths.items()
+    }
+
     table = table.sort_values("position").reset_index(drop=True)
     table["points"] = table["points"].round().astype(int)
     table["title"] = table["team"].map(chances)
     table["relegation"] = table["team"].map(relegation)
-    return table[["position", "team", "points", "title", "relegation"]]
+    table["spi"] = table["team"].map(spi)
+    return table[["position", "team", "spi", "points", "title", "relegation"]]
