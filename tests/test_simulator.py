@@ -325,6 +325,8 @@ def test_summary_table_includes_spi_column():
         "position",
         "team",
         "spi",
+        "attack",
+        "defense",
         "points",
         "title",
         "relegation",
