@@ -41,6 +41,8 @@ expected goal difference into win/draw/loss probabilities during the
 simulation. When no matches have been played the intercept and slope are
 automatically derived from the available seasons using ``compute_spi_coeffs``
 instead of returning the hard-coded ``-0.309255`` and ``0.425492`` defaults.
+These defaults were themselves obtained by applying ``compute_spi_coeffs`` to
+the historical results bundled in ``data/``.
 The helper ``initial_spi_strengths`` can be used at the start of a season to
 shrink each team's previous rating towards the league average following
 ``current = previous × weight + mean × (1 − weight)``.
