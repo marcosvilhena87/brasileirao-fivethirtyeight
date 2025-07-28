@@ -840,7 +840,9 @@ def estimate_spi_strengths(
     regression: a match ``d`` days before the latest carries weight
     ``exp(-logistic_decay * d)``. If omitted the decay defaults to ``0.007``.
     ``match_weights`` may directly provide a
-    sequence of weights for the played matches when fitting the regression.
+    sequence of weights for the played matches when fitting the regression. If
+    both ``logistic_decay`` and ``match_weights`` are given the resulting
+    weights are multiplied.
     ``K`` controls the magnitude of rating updates after each played match.
     """
 
@@ -888,7 +890,12 @@ def estimate_spi_strengths(
 
     exog = sm.add_constant(pd.Series(diffs, name="diff"))
     weights = None
-    if logistic_weights is not None:
+    if logistic_weights is not None and match_weights is not None:
+        weights = pd.Series(
+            logistic_weights.values * match_weights.loc[played.index].values,
+            index=exog.index,
+        )
+    elif logistic_weights is not None:
         weights = pd.Series(logistic_weights.values, index=exog.index)
     elif match_weights is not None:
         weights = pd.Series(match_weights.loc[played.index], index=exog.index)

@@ -223,3 +223,23 @@ def test_compute_spi_coeffs_logistic_decay_changes_values():
     assert not (
         np.isclose(base[0], decayed[0]) and np.isclose(base[1], decayed[1])
     )
+
+
+def test_logistic_and_match_weight_combination():
+    df = parse_matches("data/Brasileirao2025A.txt")
+    weights = pd.Series(np.linspace(1.0, 2.0, len(df)), index=df.index)
+
+    logistic = estimate_spi_strengths(df, logistic_decay=0.01)
+    manual = estimate_spi_strengths(df, logistic_decay=None, match_weights=weights)
+    combined = estimate_spi_strengths(
+        df, logistic_decay=0.01, match_weights=weights
+    )
+
+    assert not (
+        np.isclose(combined[3], logistic[3])
+        and np.isclose(combined[4], logistic[4])
+    )
+    assert not (
+        np.isclose(combined[3], manual[3])
+        and np.isclose(combined[4], manual[4])
+    )

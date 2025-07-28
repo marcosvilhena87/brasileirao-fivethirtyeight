@@ -48,8 +48,9 @@ def compute_spi_coeffs(
     CSV path. All matches from the selected seasons are merged into a single
     DataFrame and passed once to :func:`estimate_spi_strengths` using the
     computed weights. ``logistic_decay`` applies an exponential weight to
-    recent fixtures when fitting the logistic regression. The default decay
-    rate is ``0.007``. If no match files are
+    recent fixtures when fitting the logistic regression. When both logistic
+    weighting and the computed match weights are present they are multiplied.
+    The default decay rate is ``0.007``. If no match files are
     available the default SPI coefficients are returned.
     """
 
