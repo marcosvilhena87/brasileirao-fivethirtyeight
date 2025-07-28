@@ -8,7 +8,7 @@ Install dependencies from `requirements.txt` and run the simulator:
 
 ```bash
 pip install -r requirements.txt
-python main.py --simulations 1000
+python main.py --simulations 1000 --decay-rate 0.01
 ```
 
 By default the command line uses the `spi` rating method. The logistic
@@ -24,6 +24,8 @@ results.
 Use `--logistic-decay` to weight recent games more heavily when fitting the
 SPI logistic regression. A fixture played `d` days before the most recent one
 receives weight `exp(-logistic_decay * d)`.
+Use `--decay-rate` to exponentially downweight older matches when estimating
+strengths, applying weight `exp(-decay_rate * days_since)`.
 The `--rating-method` option chooses the algorithm used to rate teams, for
 example `elo` or `poisson` instead of the default `spi`. When using the SPI
 methods, you can pass `--seasons YEAR YEAR ...` to recompute the logistic
