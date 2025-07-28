@@ -10,7 +10,12 @@ from brasileirao import (
     simulate_relegation_chances,
     simulate_final_table,
 )
-from brasileirao.simulator import get_strengths
+from brasileirao.simulator import (
+    get_strengths,
+    SPI_DEFAULT_INTERCEPT,
+    SPI_DEFAULT_SLOPE,
+)
+from scipy.special import expit
 
 
 def main() -> None:
@@ -152,17 +157,20 @@ def main() -> None:
     summary["position"] = range(1, len(summary) + 1)
     summary["points"] = summary["points"].round().astype(int)
 
-    strengths, _avg, _ha, _ = get_strengths(
+    strengths, _avg, _ha, extra = get_strengths(
         matches,
         args.rating_method,
         market_path=args.market_path,
         decay_rate=args.decay_rate,
         logistic_decay=args.logistic_decay,
     )
-    spi = {
-        t: float(30 * np.log10(max(s["attack"] / s["defense"], 1e-6)) + 75)
-        for t, s in strengths.items()
-    }
+    intercept, slope = SPI_DEFAULT_INTERCEPT, SPI_DEFAULT_SLOPE
+    if args.rating_method in {"spi", "initial_spi"} and isinstance(extra, tuple):
+        intercept, slope = extra
+    spi = {}
+    for t, s in strengths.items():
+        gd = np.log(max(s["attack"] / s["defense"], 1e-6))
+        spi[t] = float(100 * expit(intercept + slope * gd))
     summary["spi"] = summary["team"].map(spi)
     summary["attack"] = summary["team"].map(lambda t: strengths[t]["attack"])
     summary["defense"] = summary["team"].map(lambda t: strengths[t]["defense"])
