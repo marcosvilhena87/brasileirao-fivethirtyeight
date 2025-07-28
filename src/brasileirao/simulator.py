@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 from collections.abc import Sequence
 from scipy.optimize import minimize
+from scipy.special import expit
 from scipy.stats import poisson
 
 # Default SPI coefficients derived from the 2022-2024 seasons
@@ -1781,10 +1782,13 @@ def summary_table(
         decay_rate=decay_rate,
         logistic_decay=logistic_decay,
     )
-    spi = {
-        t: float(30 * np.log10(max(s["attack"] / s["defense"], 1e-6)) + 75)
-        for t, s in strengths.items()
-    }
+    intercept, slope = SPI_DEFAULT_INTERCEPT, SPI_DEFAULT_SLOPE
+    if rating_method in {"spi", "initial_spi"} and isinstance(_extra, tuple):
+        intercept, slope = _extra
+    spi = {}
+    for t, s in strengths.items():
+        gd = np.log(max(s["attack"] / s["defense"], 1e-6))
+        spi[t] = float(100 * expit(intercept + slope * gd))
 
     table = table.sort_values("position").reset_index(drop=True)
     table["points"] = table["points"].round().astype(int)
