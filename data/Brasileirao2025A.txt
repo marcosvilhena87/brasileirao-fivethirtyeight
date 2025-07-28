@@ -156,7 +156,7 @@ TeamListedFirst: home
 27/07/2025	Sao Paulo	3-1	Fluminense
 27/07/2025	Bahia		3-0	Juventude
 27/07/2025	Internacional	1-1	Vasco
-27/07/2025	Flamengo		Atletico-MG
+27/07/2025	Flamengo	1-0	Atletico-MG
 29/07/2025	Gremio			Fortaleza
 02/08/2025	Sport			Bahia
 02/08/2025	Mirassol		Vasco
