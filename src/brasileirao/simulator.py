@@ -303,12 +303,15 @@ def _estimate_strengths(
 
 
 def _estimate_team_home_advantages(
-    matches: pd.DataFrame, factors: dict[str, float] | None = None
+    matches: pd.DataFrame,
+    factors: dict[str, float] | None = None,
+    shrink_weight: float = 0.67,
 ) -> dict[str, float]:
     """Return relative home advantage factors for each team.
 
     When ``factors`` is supplied the dictionary is updated in-place so the
-    caller can maintain values across seasons.
+    caller can maintain values across seasons. ``shrink_weight`` controls how
+    strongly the raw estimates are pulled toward ``1.0``.
     """
     played = matches.dropna(subset=["home_score", "away_score"])
 
@@ -334,6 +337,7 @@ def _estimate_team_home_advantages(
             results[t] = 1.0
         else:
             results[t] = float((home_gpg / away_gpg) / baseline)
+        results[t] = results[t] * shrink_weight + (1 - shrink_weight)
 
     if factors is not None:
         for t in results:
@@ -1434,9 +1438,9 @@ def simulate_chances(
         rng = np.random.default_rng()
 
     if team_home_advantages is None:
-        team_home_advantages = _estimate_team_home_advantages(matches)
+        team_home_advantages = _estimate_team_home_advantages(matches, shrink_weight=0.67)
     else:
-        merged = _estimate_team_home_advantages(matches)
+        merged = _estimate_team_home_advantages(matches, shrink_weight=0.67)
         merged.update(team_home_advantages)
         team_home_advantages = merged
 
@@ -1521,9 +1525,9 @@ def simulate_relegation_chances(
         rng = np.random.default_rng()
 
     if team_home_advantages is None:
-        team_home_advantages = _estimate_team_home_advantages(matches)
+        team_home_advantages = _estimate_team_home_advantages(matches, shrink_weight=0.67)
     else:
-        merged = _estimate_team_home_advantages(matches)
+        merged = _estimate_team_home_advantages(matches, shrink_weight=0.67)
         merged.update(team_home_advantages)
         team_home_advantages = merged
 
@@ -1608,9 +1612,9 @@ def simulate_final_table(
         rng = np.random.default_rng()
 
     if team_home_advantages is None:
-        team_home_advantages = _estimate_team_home_advantages(matches)
+        team_home_advantages = _estimate_team_home_advantages(matches, shrink_weight=0.67)
     else:
-        merged = _estimate_team_home_advantages(matches)
+        merged = _estimate_team_home_advantages(matches, shrink_weight=0.67)
         merged.update(team_home_advantages)
         team_home_advantages = merged
 
