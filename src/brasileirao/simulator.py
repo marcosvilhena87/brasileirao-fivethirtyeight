@@ -1188,7 +1188,7 @@ def get_strengths(
     smooth: float = 1.0,
     market_path: str | Path = "data/Brasileirao2025A.csv",
     decay_rate: float | None = None,
-    logistic_decay: float | None = None,
+    logistic_decay: float | None = 0.007,
     seasons: list[str] | None = None,
 ) -> tuple[dict[str, dict[str, float]], float, float, float]:
     """Return strength estimates for ``matches`` using ``rating_method``.
@@ -1211,7 +1211,8 @@ def get_strengths(
     ``seasons`` may provide a list of past years for recalculating the SPI
     coefficients when ``rating_method`` is ``"spi"`` or ``"initial_spi"``.
     ``logistic_decay`` weighs recent results more heavily in the SPI logistic
-    regression using ``exp(-logistic_decay * days_since_latest)``.
+    regression using ``exp(-logistic_decay * days_since_latest)``. When omitted
+    the decay defaults to ``0.007``.
     """
 
     extra_param = 0.0
@@ -1380,7 +1381,7 @@ def simulate_chances(
     smooth: float = 1.0,
     market_path: str | Path = "data/Brasileirao2025A.csv",
     decay_rate: float | None = None,
-    logistic_decay: float | None = None,
+    logistic_decay: float | None = 0.007,
     seasons: list[str] | None = None,
 ) -> dict[str, float]:
     """Simulate remaining fixtures and return title probabilities.
@@ -1417,7 +1418,7 @@ def simulate_chances(
     decay_rate : float | None, optional
         Exponential decay factor applied to older matches when estimating
         strengths. ``None`` or ``0`` gives equal weight to all results.
-    logistic_decay : float | None, optional
+    logistic_decay : float | None, default 0.007
         Weighting factor for the SPI logistic regression. A match ``d`` days
         before the latest fixture receives weight ``exp(-logistic_decay * d)``.
     seasons : list[str] | None, optional
@@ -1485,7 +1486,7 @@ def simulate_relegation_chances(
     smooth: float = 1.0,
     market_path: str | Path = "data/Brasileirao2025A.csv",
     decay_rate: float | None = None,
-    logistic_decay: float | None = None,
+    logistic_decay: float | None = 0.007,
     seasons: list[str] | None = None,
 ) -> dict[str, float]:
     """Simulate remaining fixtures and return relegation probabilities.
@@ -1503,7 +1504,7 @@ def simulate_relegation_chances(
     decay_rate : float | None, optional
         Exponential decay factor applied to older matches when estimating
         strengths. ``None`` or ``0`` gives equal weight to all results.
-    logistic_decay : float | None, optional
+    logistic_decay : float | None, default 0.007
         Weighting factor for the SPI logistic regression. A match ``d`` days
         before the latest fixture receives weight ``exp(-logistic_decay * d)``.
     seasons : list[str] | None, optional
@@ -1574,7 +1575,7 @@ def simulate_final_table(
     smooth: float = 1.0,
     market_path: str | Path = "data/Brasileirao2025A.csv",
     decay_rate: float | None = None,
-    logistic_decay: float | None = None,
+    logistic_decay: float | None = 0.007,
     seasons: list[str] | None = None,
 ) -> pd.DataFrame:
     """Project final league positions and points for each team.
@@ -1590,7 +1591,7 @@ def simulate_final_table(
     decay_rate : float | None, optional
         Exponential decay factor applied to older matches when estimating
         strengths. ``None`` or ``0`` gives equal weight to all results.
-    logistic_decay : float | None, optional
+    logistic_decay : float | None, default 0.007
         Weighting factor for the SPI logistic regression. A match ``d`` days
         before the latest fixture receives weight ``exp(-logistic_decay * d)``.
     seasons : list[str] | None, optional
@@ -1687,6 +1688,7 @@ def summary_table(
     smooth: float = 1.0,
     market_path: str | Path = "data/Brasileirao2025A.csv",
     decay_rate: float | None = None,
+    logistic_decay: float | None = 0.007,
 ) -> pd.DataFrame:
     """Return combined projections for each team.
 
@@ -1703,6 +1705,9 @@ def summary_table(
     decay_rate : float | None, optional
         Exponential decay factor applied to older matches when estimating
         strengths. ``None`` or ``0`` gives equal weight to all results.
+    logistic_decay : float | None, default 0.007
+        Weighting factor for the SPI logistic regression. A match ``d`` days
+        before the latest fixture receives weight ``exp(-logistic_decay * d)``.
     """
 
     chances = simulate_chances(
@@ -1718,6 +1723,7 @@ def summary_table(
         smooth=smooth,
         market_path=market_path,
         decay_rate=decay_rate,
+        logistic_decay=logistic_decay,
     )
     relegation = simulate_relegation_chances(
         matches,
@@ -1732,6 +1738,7 @@ def summary_table(
         smooth=smooth,
         market_path=market_path,
         decay_rate=decay_rate,
+        logistic_decay=logistic_decay,
     )
     table = simulate_final_table(
         matches,
@@ -1746,6 +1753,7 @@ def summary_table(
         smooth=smooth,
         market_path=market_path,
         decay_rate=decay_rate,
+        logistic_decay=logistic_decay,
     )
 
     table = table.sort_values("position").reset_index(drop=True)
