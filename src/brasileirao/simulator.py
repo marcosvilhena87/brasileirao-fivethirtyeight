@@ -31,10 +31,15 @@ NOSCORE_PATTERN = re.compile(
 
 
 def parse_matches(path: str | Path) -> pd.DataFrame:
-    """Parse the fixture text file into a DataFrame."""
+    """Parse the fixture text file into a DataFrame.
+
+    The data files are encoded in UTF-8 and may contain a byte order mark.
+    Using ``utf-8-sig`` ensures both plain UTF-8 and BOM-prefixed files are
+    accepted.
+    """
     rows: list[dict] = []
     in_games = False
-    with open(path, 'r', encoding='utf-8') as f:
+    with open(path, "r", encoding="utf-8-sig") as f:
         for line in f:
             if line.strip() == 'GamesBegin':
                 in_games = True
