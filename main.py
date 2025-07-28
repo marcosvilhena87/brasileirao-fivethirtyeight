@@ -164,15 +164,19 @@ def main() -> None:
         for t, s in strengths.items()
     }
     summary["spi"] = summary["team"].map(spi)
+    summary["attack"] = summary["team"].map(lambda t: strengths[t]["attack"])
+    summary["defense"] = summary["team"].map(lambda t: strengths[t]["defense"])
 
     TITLE_W = 7
     REL_W = 10
-    print(f"{'Pos':>3}  {'Team':15s} {'SPI':>6} {'Points':>6} {'Title':^{TITLE_W}} {'Relegation':^{REL_W}}")
+    print(
+        f"{'Pos':>3}  {'Team':15s} {'SPI':>6} {'Attack':>6} {'Defense':>7} {'Points':>6} {'Title':^{TITLE_W}} {'Relegation':^{REL_W}}"
+    )
     for _, row in summary.iterrows():
         title = f"{row['title']:.2%}"
         releg = f"{row['relegation']:.2%}"
         print(
-            f"{row['position']:>2d}   {row['team']:15s} {row['spi']:6.1f} {row['points']:6d} {title:^{TITLE_W}} {releg:^{REL_W}}"
+            f"{row['position']:>2d}   {row['team']:15s} {row['spi']:6.1f} {row['attack']:6.2f} {row['defense']:7.2f} {row['points']:6d} {title:^{TITLE_W}} {releg:^{REL_W}}"
         )
 
 

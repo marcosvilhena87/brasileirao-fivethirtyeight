@@ -1791,4 +1791,17 @@ def summary_table(
     table["title"] = table["team"].map(chances)
     table["relegation"] = table["team"].map(relegation)
     table["spi"] = table["team"].map(spi)
-    return table[["position", "team", "spi", "points", "title", "relegation"]]
+    table["attack"] = table["team"].map(lambda t: strengths[t]["attack"])
+    table["defense"] = table["team"].map(lambda t: strengths[t]["defense"])
+    return table[
+        [
+            "position",
+            "team",
+            "spi",
+            "attack",
+            "defense",
+            "points",
+            "title",
+            "relegation",
+        ]
+    ]
