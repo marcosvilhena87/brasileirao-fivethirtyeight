@@ -14,7 +14,11 @@ from brasileirao import (
     SPI_DEFAULT_INTERCEPT,
     SPI_DEFAULT_SLOPE,
 )
-from brasileirao.simulator import update_spi_ratings, estimate_market_strengths
+from brasileirao.simulator import (
+    update_spi_ratings,
+    estimate_market_strengths,
+    compute_leader_stats,
+)
 
 
 def test_parse_matches():
@@ -243,3 +247,31 @@ def test_logistic_and_match_weight_combination():
         np.isclose(combined[3], manual[3])
         and np.isclose(combined[4], manual[4])
     )
+
+
+def test_compute_leader_stats_regression():
+    df = parse_matches("data/Brasileirao2025A.txt")
+    counts = compute_leader_stats(df)
+    expected = {
+        "Cruzeiro": 27,
+        "Mirassol": 0,
+        "Gremio": 0,
+        "Atletico-MG": 0,
+        "Fortaleza": 8,
+        "Fluminense": 0,
+        "Sao Paulo": 0,
+        "Sport": 0,
+        "Juventude": 0,
+        "Vitoria": 0,
+        "Flamengo": 55,
+        "Internacional": 0,
+        "Palmeiras": 51,
+        "Botafogo": 1,
+        "Vasco": 1,
+        "Santos": 0,
+        "Bahia": 0,
+        "Corinthians": 8,
+        "Bragantino": 4,
+        "Ceara": 1,
+    }
+    assert counts == expected

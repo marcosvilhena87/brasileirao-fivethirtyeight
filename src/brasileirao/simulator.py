@@ -161,19 +161,22 @@ def compute_leader_stats(matches: pd.DataFrame) -> dict[str, int]:
     teams = pd.unique(matches[["home_team", "away_team"]].values.ravel())
     leader_counts = {t: 0 for t in teams}
 
-    stats = {
-        t: {
-            "team": t,
-            "played": 0,
-            "wins": 0,
-            "draws": 0,
-            "losses": 0,
-            "gf": 0,
-            "ga": 0,
-            "points": 0,
-        }
-        for t in teams
-    }
+    # Maintain cumulative standings directly in a DataFrame so we don't need to
+    # rebuild one from dictionaries on every loop iteration.
+    stats_df = pd.DataFrame(
+        0,
+        index=pd.Index(teams, name="team"),
+        columns=[
+            "played",
+            "wins",
+            "draws",
+            "losses",
+            "gf",
+            "ga",
+            "gd",
+            "points",
+        ],
+    )
 
     played_rows: list[dict] = []
 
@@ -188,48 +191,41 @@ def compute_leader_stats(matches: pd.DataFrame) -> dict[str, int]:
 
         played_rows.append(row.to_dict())
 
-        h = stats[ht]
-        a = stats[at]
-        h["played"] += 1
-        a["played"] += 1
-        h["gf"] += hs
-        h["ga"] += as_
-        a["gf"] += as_
-        a["ga"] += hs
+        stats_df.loc[ht, ["played", "gf", "ga", "gd"]] += [1, hs, as_, hs - as_]
+        stats_df.loc[at, ["played", "gf", "ga", "gd"]] += [1, as_, hs, as_ - hs]
 
         if hs > as_:
-            h["wins"] += 1
-            a["losses"] += 1
-            h["points"] += 3
+            stats_df.loc[ht, ["wins", "points"]] += [1, 3]
+            stats_df.loc[at, "losses"] += 1
         elif hs < as_:
-            a["wins"] += 1
-            h["losses"] += 1
-            a["points"] += 3
+            stats_df.loc[at, ["wins", "points"]] += [1, 3]
+            stats_df.loc[ht, "losses"] += 1
         else:
-            h["draws"] += 1
-            a["draws"] += 1
-            h["points"] += 1
-            a["points"] += 1
+            stats_df.loc[[ht, at], "draws"] += 1
+            stats_df.loc[[ht, at], "points"] += 1
 
-        df = pd.DataFrame(stats.values())
-        df["gd"] = df["gf"] - df["ga"]
-        df["head_to_head"] = 0
+        current = stats_df.copy()
+        current["head_to_head"] = 0
         played_df = pd.DataFrame(played_rows)
 
-        for _, group in df.groupby(["points", "wins", "gd", "gf"]):
+        for _, group in current.groupby(["points", "wins", "gd", "gf"]):
             if len(group) <= 1:
                 continue
-            teams_tied = group["team"].tolist()
+            teams_tied = group.index.tolist()
             h2h = _head_to_head_points(played_df, teams_tied)
             for t, val in h2h.items():
-                df.loc[df["team"] == t, "head_to_head"] = val
+                current.loc[t, "head_to_head"] = val
 
-        df = df.sort_values(
-            ["points", "wins", "gd", "gf", "head_to_head", "team"],
-            ascending=[False, False, False, False, False, True],
-        ).reset_index(drop=True)
+        current = (
+            current.reset_index()
+            .sort_values(
+                ["points", "wins", "gd", "gf", "head_to_head", "team"],
+                ascending=[False, False, False, False, False, True],
+            )
+            .reset_index(drop=True)
+        )
 
-        leader_counts[df.iloc[0]["team"]] += 1
+        leader_counts[current.iloc[0]["team"]] += 1
 
     return leader_counts
 
