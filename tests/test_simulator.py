@@ -20,6 +20,7 @@ from brasileirao.simulator import (
     estimate_market_strengths,
     compute_leader_stats,
 )
+from brasileirao.spi_coeffs import available_seasons
 
 
 def test_parse_matches():
@@ -64,6 +65,14 @@ def test_compute_spi_coeffs_empty_returns_defaults():
     intercept, slope = compute_spi_coeffs(seasons=[])
     assert intercept == SPI_DEFAULT_INTERCEPT
     assert slope == SPI_DEFAULT_SLOPE
+
+
+def test_compute_spi_coeffs_filters_incomplete_seasons():
+    seasons = available_seasons(only_complete=True)
+    explicit = compute_spi_coeffs(seasons=seasons)
+    default = compute_spi_coeffs()
+    assert np.isclose(explicit[0], default[0])
+    assert np.isclose(explicit[1], default[1])
 
 
 def test_weighted_strengths_change():

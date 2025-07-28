@@ -15,10 +15,20 @@ from .simulator import (
 )
 
 
-def available_seasons(data_dir: str | pathlib.Path = "data") -> list[str]:
+def season_complete(path: pathlib.Path) -> bool:
+    """Return ``True`` if all fixtures in ``path`` have final scores."""
+    df = parse_matches(path)
+    return not (df["home_score"].isna().any() or df["away_score"].isna().any())
+
+
+def available_seasons(
+    data_dir: str | pathlib.Path = "data", *, only_complete: bool = False
+) -> list[str]:
     """Return a sorted list of seasons found in ``data_dir``."""
     seasons: list[str] = []
     for txt in pathlib.Path(data_dir).glob("Brasileirao????A.txt"):
+        if only_complete and not season_complete(txt):
+            continue
         year = txt.stem[11:15]
         seasons.append(year)
     seasons.sort()
@@ -61,7 +71,7 @@ def compute_spi_coeffs(
     elif len(seasons) == 0:
         return SPI_DEFAULT_INTERCEPT, SPI_DEFAULT_SLOPE
     if not seasons:
-        seasons = available_seasons(data_dir)
+        seasons = available_seasons(data_dir, only_complete=True)
 
     if isinstance(market_path, Mapping):
         market_map = {str(k): str(v) for k, v in market_path.items()}
