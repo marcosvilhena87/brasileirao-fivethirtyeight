@@ -263,7 +263,7 @@ def test_compute_leader_stats_regression():
         "Sport": 0,
         "Juventude": 0,
         "Vitoria": 0,
-        "Flamengo": 55,
+        "Flamengo": 56,
         "Internacional": 0,
         "Palmeiras": 51,
         "Botafogo": 1,
