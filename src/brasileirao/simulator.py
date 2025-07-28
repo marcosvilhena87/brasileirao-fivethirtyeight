@@ -820,7 +820,7 @@ def estimate_spi_strengths(
     market_path: str | Path = "data/Brasileirao2025A.csv",
     smooth: float = 1.0,
     decay_rate: float | None = None,
-    logistic_decay: float | None = None,
+    logistic_decay: float | None = 0.007,
     match_weights: pd.Series | None = None,
     *,
     K: float = 0.05,
@@ -838,7 +838,8 @@ def estimate_spi_strengths(
     custom CSV file with team market values. ``logistic_decay`` optionally
     applies exponential weighting to recent fixtures when fitting the logistic
     regression: a match ``d`` days before the latest carries weight
-    ``exp(-logistic_decay * d)``. ``match_weights`` may directly provide a
+    ``exp(-logistic_decay * d)``. If omitted the decay defaults to ``0.007``.
+    ``match_weights`` may directly provide a
     sequence of weights for the played matches when fitting the regression.
     ``K`` controls the magnitude of rating updates after each played match.
     """

@@ -71,10 +71,10 @@ def main() -> None:
     parser.add_argument(
         "--logistic-decay",
         type=float,
-        default=None,
+        default=0.007,
         help=(
             "exponential weight for recent matches when fitting the SPI "
-            "logistic regression"
+            "logistic regression (default: 0.007)"
         ),
     )
     parser.add_argument(
