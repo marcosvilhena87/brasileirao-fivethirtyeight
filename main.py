@@ -77,6 +77,14 @@ def main() -> None:
             "logistic regression"
         ),
     )
+    parser.add_argument(
+        "--decay-rate",
+        type=float,
+        default=None,
+        help=(
+            "exponential weight for older matches when estimating strengths"
+        ),
+    )
     args = parser.parse_args()
 
     matches = parse_matches(args.file)
@@ -96,6 +104,7 @@ def main() -> None:
         market_path=args.market_path,
         team_home_advantages=team_home,
         logistic_decay=args.logistic_decay,
+        decay_rate=args.decay_rate,
         seasons=args.seasons,
     )
 
@@ -107,6 +116,7 @@ def main() -> None:
         market_path=args.market_path,
         team_home_advantages=team_home,
         logistic_decay=args.logistic_decay,
+        decay_rate=args.decay_rate,
         seasons=args.seasons,
     )
 
@@ -118,6 +128,7 @@ def main() -> None:
         market_path=args.market_path,
         team_home_advantages=team_home,
         logistic_decay=args.logistic_decay,
+        decay_rate=args.decay_rate,
         seasons=args.seasons,
     )
 
