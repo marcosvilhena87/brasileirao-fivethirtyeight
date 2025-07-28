@@ -34,7 +34,7 @@ def compute_spi_coeffs(
     ),
     smooth: float = 1.0,
     decay_rate: float = 0.0,
-    logistic_decay: float | None = None,
+    logistic_decay: float | None = 0.007,
 ) -> tuple[float, float]:
     """Return fitted intercept and slope from historical seasons.
 
@@ -48,7 +48,8 @@ def compute_spi_coeffs(
     CSV path. All matches from the selected seasons are merged into a single
     DataFrame and passed once to :func:`estimate_spi_strengths` using the
     computed weights. ``logistic_decay`` applies an exponential weight to
-    recent fixtures when fitting the logistic regression. If no match files are
+    recent fixtures when fitting the logistic regression. The default decay
+    rate is ``0.007``. If no match files are
     available the default SPI coefficients are returned.
     """
 

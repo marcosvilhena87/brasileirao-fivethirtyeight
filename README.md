@@ -23,7 +23,8 @@ team market values. The `--seed` argument sets the random seed for reproducible
 results.
 Use `--logistic-decay` to weight recent games more heavily when fitting the
 SPI logistic regression. A fixture played `d` days before the most recent one
-receives weight `exp(-logistic_decay * d)`.
+receives weight `exp(-logistic_decay * d)`. If omitted the decay defaults to
+`0.007`.
 Use `--decay-rate` to exponentially downweight older matches when estimating
 strengths, applying weight `exp(-decay_rate * days_since)`.
 The `--rating-method` option chooses the algorithm used to rate teams, for
@@ -75,6 +76,7 @@ By default all seasons in ``data/`` are used.  You may pass ``--seasons`` or set
 how quickly older seasons lose influence.
 ``logistic_decay`` can be set in the simulation functions to apply a similar
 exponential weight to recent fixtures when fitting the SPI logistic regression.
+When omitted the simulator uses a default of ``0.007``.
 
 The script outputs the estimated chance of winning the title for each team. It
 then prints the probability of each side finishing in the bottom four and being
