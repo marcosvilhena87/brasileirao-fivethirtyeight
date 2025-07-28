@@ -8,9 +8,9 @@ from collections.abc import Sequence
 from scipy.optimize import minimize
 from scipy.stats import poisson
 
-# Default SPI coefficients derived from the 2022-2025 seasons
-SPI_DEFAULT_INTERCEPT = -0.309255
-SPI_DEFAULT_SLOPE = 0.425492
+# Default SPI coefficients derived from the 2022-2024 seasons
+SPI_DEFAULT_INTERCEPT = -0.313922
+SPI_DEFAULT_SLOPE = 0.391002
 
 
 def _parse_date(date_str: str) -> pd.Timestamp:
