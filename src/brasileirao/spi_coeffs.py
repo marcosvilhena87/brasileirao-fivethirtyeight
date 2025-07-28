@@ -60,7 +60,7 @@ def compute_spi_coeffs(
     computed weights. ``logistic_decay`` applies an exponential weight to
     recent fixtures when fitting the logistic regression. When both logistic
     weighting and the computed match weights are present they are multiplied.
-    The default decay rate is ``0.007``. If no match files are
+    The logistic decay rate defaults to ``0.007``. If no match files are
     available the default SPI coefficients are returned.
     """
 

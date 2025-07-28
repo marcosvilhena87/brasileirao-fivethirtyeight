@@ -840,7 +840,8 @@ def estimate_spi_strengths(
     custom CSV file with team market values. ``logistic_decay`` optionally
     applies exponential weighting to recent fixtures when fitting the logistic
     regression: a match ``d`` days before the latest carries weight
-    ``exp(-logistic_decay * d)``. If omitted the decay defaults to ``0.007``.
+    ``exp(-logistic_decay * d)``. If omitted, the logistic decay defaults to
+    ``0.007``.
     ``match_weights`` may directly provide a
     sequence of weights for the played matches when fitting the regression. If
     both ``logistic_decay`` and ``match_weights`` are given the resulting
@@ -1218,7 +1219,7 @@ def get_strengths(
     coefficients when ``rating_method`` is ``"spi"`` or ``"initial_spi"``.
     ``logistic_decay`` weighs recent results more heavily in the SPI logistic
     regression using ``exp(-logistic_decay * days_since_latest)``. When omitted
-    the decay defaults to ``0.007``.
+    the logistic decay defaults to ``0.007``.
     """
 
     extra_param = 0.0
