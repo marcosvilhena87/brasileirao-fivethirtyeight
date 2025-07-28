@@ -1,5 +1,6 @@
 import os
 import sys
+from pathlib import Path
 import numpy as np
 import pandas as pd
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
@@ -25,6 +26,14 @@ def test_parse_matches():
     df = parse_matches('data/Brasileirao2025A.txt')
     assert len(df) == 380
     assert {'home_team', 'away_team', 'home_score', 'away_score'}.issubset(df.columns)
+
+
+def test_parse_matches_accepts_bom(tmp_path):
+    data = Path('data/Brasileirao2025A.txt').read_bytes()
+    bom_file = tmp_path / 'with_bom.txt'
+    bom_file.write_bytes(b'\xef\xbb\xbf' + data)
+    df = parse_matches(bom_file)
+    assert len(df) == 380
 
 
 def test_league_table_basic():
@@ -253,25 +262,25 @@ def test_compute_leader_stats_regression():
     df = parse_matches("data/Brasileirao2025A.txt")
     counts = compute_leader_stats(df)
     expected = {
-        "Cruzeiro": 27,
+        "Cruzeiro": 26,
         "Mirassol": 0,
-        "Gremio": 0,
-        "Atletico-MG": 0,
-        "Fortaleza": 8,
-        "Fluminense": 0,
-        "Sao Paulo": 0,
+        "Grêmio": 0,
+        "Atlético-MG": 0,
+        "Fortaleza": 7,
+        "Fluminense": 1,
+        "São Paulo": 0,
         "Sport": 0,
-        "Juventude": 0,
-        "Vitoria": 0,
-        "Flamengo": 56,
+        "Juventude": 3,
+        "Vitória": 0,
+        "Flamengo": 51,
         "Internacional": 0,
-        "Palmeiras": 51,
-        "Botafogo": 1,
-        "Vasco": 1,
+        "Palmeiras": 56,
+        "Botafogo": 0,
+        "Vasco": 0,
         "Santos": 0,
         "Bahia": 0,
-        "Corinthians": 8,
-        "Bragantino": 4,
-        "Ceara": 1,
+        "Corinthians": 9,
+        "Bragantino": 3,
+        "Ceará": 1,
     }
     assert counts == expected
