@@ -148,6 +148,18 @@ def test_team_home_advantage_changes_results():
     assert base_pts != adv_pts
 
 
+def test_home_advantage_shrinkage_modifies_values():
+    df = parse_matches("data/Brasileirao2025A.txt")
+    from brasileirao.simulator import _estimate_team_home_advantages
+
+    raw = _estimate_team_home_advantages(df, shrink_weight=1.0)
+    shrunk = _estimate_team_home_advantages(df)
+
+    assert raw.keys() == shrunk.keys()
+    changed = any(not np.isclose(raw[t], shrunk[t]) for t in raw)
+    assert changed
+
+
 def test_spi_coeffs_decay_changes_values():
     seasons = ["2023", "2024"]
     no_decay = compute_spi_coeffs(seasons=seasons, decay_rate=0.0, logistic_decay=None)
