@@ -20,6 +20,7 @@ from brasileirao.simulator import (
     update_spi_ratings,
     estimate_market_strengths,
     compute_leader_stats,
+    get_strengths,
 )
 from brasileirao.spi_coeffs import available_seasons
 
@@ -60,6 +61,18 @@ def test_estimate_spi_strengths_returns_five_values():
     assert len(result) == 5
     assert isinstance(result[-1], float)
     assert isinstance(result[-2], float)
+
+
+def test_estimate_spi_strengths_empty_uses_spi_coeffs():
+    df = parse_matches("data/Brasileirao2025A.txt")
+    df["home_score"] = np.nan
+    df["away_score"] = np.nan
+
+    result = estimate_spi_strengths(df)
+    expected = compute_spi_coeffs()
+
+    assert np.isclose(result[3], expected[0])
+    assert np.isclose(result[4], expected[1])
 
 
 def test_compute_spi_coeffs_empty_returns_defaults():
@@ -199,6 +212,15 @@ def test_initial_spi_strengths_multiple_seasons_changes_output():
     assert not np.isclose(
         single["Palmeiras"]["attack"], multi["Palmeiras"]["attack"]
     )
+
+
+def test_get_strengths_spi_defaults_to_computed_coeffs():
+    df = parse_matches("data/Brasileirao2025A.txt")
+    strengths, _avg, _ha, extra = get_strengths(df, rating_method="spi")
+    expected = compute_spi_coeffs(market_path="data/Brasileirao2025A.csv")
+
+    assert np.isclose(extra[0], expected[0])
+    assert np.isclose(extra[1], expected[1])
 
 
 def test_spi_coeffs_uses_season_market_files():

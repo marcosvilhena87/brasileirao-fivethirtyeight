@@ -1255,14 +1255,22 @@ def get_strengths(
             decay_rate=decay_rate,
             logistic_decay=logistic_decay,
         )
-        if seasons is not None:
-            from .spi_coeffs import compute_spi_coeffs
+        from .spi_coeffs import compute_spi_coeffs
 
+        if seasons is None:
+            intercept, slope = compute_spi_coeffs(
+                market_path=market_path,
+                smooth=smooth,
+                decay_rate=decay_rate or 0.0,
+                logistic_decay=logistic_decay,
+            )
+        else:
             intercept, slope = compute_spi_coeffs(
                 seasons=seasons,
                 market_path=market_path,
                 smooth=smooth,
                 decay_rate=decay_rate or 0.0,
+                logistic_decay=logistic_decay,
             )
         extra_param = (intercept, slope)
     elif rating_method == "initial_spi":
