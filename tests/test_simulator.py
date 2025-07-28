@@ -213,3 +213,13 @@ def test_logistic_decay_changes_spi_coeffs():
     assert not (
         np.isclose(base[3], decayed[3]) and np.isclose(base[4], decayed[4])
     )
+
+
+def test_compute_spi_coeffs_logistic_decay_changes_values():
+    seasons = ["2023", "2024"]
+    base = compute_spi_coeffs(seasons=seasons, logistic_decay=None)
+    decayed = compute_spi_coeffs(seasons=seasons, logistic_decay=0.01)
+
+    assert not (
+        np.isclose(base[0], decayed[0]) and np.isclose(base[1], decayed[1])
+    )
