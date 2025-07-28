@@ -34,6 +34,7 @@ def compute_spi_coeffs(
     ),
     smooth: float = 1.0,
     decay_rate: float = 0.0,
+    logistic_decay: float | None = None,
 ) -> tuple[float, float]:
     """Return fitted intercept and slope from historical seasons.
 
@@ -46,8 +47,9 @@ def compute_spi_coeffs(
     may be a custom pattern containing ``{season}`` or a mapping from season to
     CSV path. All matches from the selected seasons are merged into a single
     DataFrame and passed once to :func:`estimate_spi_strengths` using the
-    computed weights. If no match files are available the default SPI
-    coefficients are returned.
+    computed weights. ``logistic_decay`` applies an exponential weight to
+    recent fixtures when fitting the logistic regression. If no match files are
+    available the default SPI coefficients are returned.
     """
 
     if seasons is None:
@@ -97,6 +99,7 @@ def compute_spi_coeffs(
         all_matches,
         market_path=csv_path,
         smooth=smooth,
+        logistic_decay=logistic_decay,
         match_weights=weights,
     )
 
@@ -128,6 +131,15 @@ def main() -> None:
         help="Exponential decay rate for historical seasons",
     )
     parser.add_argument(
+        "--logistic-decay",
+        type=float,
+        default=None,
+        help=(
+            "exponential weight for recent matches when fitting the logistic"
+            " regression"
+        ),
+    )
+    parser.add_argument(
         "--out",
         type=argparse.FileType("w"),
         default="-",
@@ -152,6 +164,7 @@ def main() -> None:
         seasons=args.seasons,
         market_path=market,
         decay_rate=args.decay_rate,
+        logistic_decay=args.logistic_decay,
     )
 
     args.out.write(f"{intercept:.6f} {slope:.6f}\n")
