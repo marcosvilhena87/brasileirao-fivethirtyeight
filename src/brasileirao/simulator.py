@@ -1387,7 +1387,7 @@ def simulate_chances(
         DataFrame containing all fixtures. Played games must have scores.
     iterations : int, default 1000
         Number of simulation runs.
-    rating_method : str, default "ratio"
+    rating_method : str, default "spi"
         Method used to estimate team strengths.
     rng : np.random.Generator | None, optional
         Random number generator to use. A new generator is created when ``None``.
