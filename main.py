@@ -10,6 +10,7 @@ from brasileirao import (
     simulate_relegation_chances,
     simulate_final_table,
 )
+from brasileirao.simulator import get_strengths
 
 
 def main() -> None:
@@ -151,14 +152,27 @@ def main() -> None:
     summary["position"] = range(1, len(summary) + 1)
     summary["points"] = summary["points"].round().astype(int)
 
+    strengths, _avg, _ha, _ = get_strengths(
+        matches,
+        args.rating_method,
+        market_path=args.market_path,
+        decay_rate=args.decay_rate,
+        logistic_decay=args.logistic_decay,
+    )
+    spi = {
+        t: float(30 * np.log10(max(s["attack"] / s["defense"], 1e-6)) + 75)
+        for t, s in strengths.items()
+    }
+    summary["spi"] = summary["team"].map(spi)
+
     TITLE_W = 7
     REL_W = 10
-    print(f"{'Pos':>3}  {'Team':15s} {'Points':>6} {'Title':^{TITLE_W}} {'Relegation':^{REL_W}}")
+    print(f"{'Pos':>3}  {'Team':15s} {'SPI':>6} {'Points':>6} {'Title':^{TITLE_W}} {'Relegation':^{REL_W}}")
     for _, row in summary.iterrows():
         title = f"{row['title']:.2%}"
         releg = f"{row['relegation']:.2%}"
         print(
-            f"{row['position']:>2d}   {row['team']:15s} {row['points']:6d} {title:^{TITLE_W}} {releg:^{REL_W}}"
+            f"{row['position']:>2d}   {row['team']:15s} {row['spi']:6.1f} {row['points']:6d} {title:^{TITLE_W}} {releg:^{REL_W}}"
         )
 
 

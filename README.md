@@ -81,6 +81,8 @@ When omitted the simulator uses a default of ``0.007``.
 The script outputs the estimated chance of winning the title for each team. It
 then prints the probability of each side finishing in the bottom four and being
 relegated. It also estimates the average final position and points of every club.
+Each team is listed with an SPI rating derived from its attack and defence
+strengths.
 
 ## Tie-break Rules
 
